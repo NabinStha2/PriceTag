@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.example.pricetag.utils.ColorLogger;
+
 import ch.qos.logback.core.spi.ErrorCodes;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j // for logger in console
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler {
@@ -24,9 +24,8 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
   public ResponseEntity<?> handleApplicationException(
       final ApplicationException exception, final HttpServletRequest request) {
     var guid = UUID.randomUUID().toString();
-    log.error(
-        String.format("ApplicationException :: Error GUID=%s; error message: %s", guid, exception.getMessage()),
-        exception);
+    ColorLogger.logError(
+        String.format("ApplicationException :: Error GUID=%s; error message: %s", guid, exception.getMessage()));
     var response = new ApiErrorResponse(
         guid,
         exception.getErrorCode(),
@@ -43,9 +42,8 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
   public ResponseEntity<?> handleUnknownException(
       final Exception exception, final HttpServletRequest request) {
     var guid = UUID.randomUUID().toString();
-    log.error(
-        String.format("Exception :: Error GUID=%s; error message: %s", guid, exception.getMessage()),
-        exception);
+    ColorLogger.logError(
+        String.format("Exception :: Error GUID=%s; error message: %s", guid, exception.getMessage()));
     var response = new ApiErrorResponse(
         guid,
         ErrorCodes.EMPTY_MODEL_STACK,
