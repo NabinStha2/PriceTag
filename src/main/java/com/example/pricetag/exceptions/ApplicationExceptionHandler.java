@@ -1,4 +1,4 @@
-package com.example.pricetag.config.exceptions;
+package com.example.pricetag.exceptions;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

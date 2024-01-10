@@ -1,4 +1,6 @@
-package com.example.pricetag.dto;
+package com.example.pricetag.responses;
+
+import java.util.Optional;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,5 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CommonResponseDto {
   private String message;
+  private Optional<Object> data;
   private String statusCode;
 }

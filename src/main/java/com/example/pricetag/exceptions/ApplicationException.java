@@ -1,4 +1,4 @@
-package com.example.pricetag.config.exceptions;
+package com.example.pricetag.exceptions;
 
 import org.springframework.http.HttpStatus;
 

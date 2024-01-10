@@ -1,5 +1,10 @@
 package com.example.pricetag.entity;
 
+import java.util.Date;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import com.example.pricetag.enums.AppUserRole;
 
 import jakarta.persistence.*;
@@ -31,5 +36,13 @@ public class User {
 
   @Enumerated(EnumType.STRING)
   private AppUserRole appUserRole;
+
+  @CreationTimestamp
+  @Column(updatable = false, name = "created_at")
+  private Date createdAt;
+
+  @UpdateTimestamp
+  @Column(name = "updated_at")
+  private Date updatedAt;
 
 }

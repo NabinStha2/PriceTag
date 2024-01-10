@@ -1,4 +1,4 @@
-package com.example.pricetag.auth;
+package com.example.pricetag.config;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -9,10 +9,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.example.pricetag.entity.User;
+import com.example.pricetag.utils.ColorLogger;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class AuthDetails implements UserDetails {
   String userName = null;
   String password = null;
@@ -22,8 +20,7 @@ public class AuthDetails implements UserDetails {
     userName = user.getEmail();
     password = user.getPassword();
 
-    log.info(user.getAppUserRole().name()
-        + " bjba sa s= == = == = = = == == =    / / / / / / // / / /  // / / / / / / / / // / / / / // /");
+    ColorLogger.logInfo(user.getAppUserRole().name());
     authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getAppUserRole().name()));
   }
 

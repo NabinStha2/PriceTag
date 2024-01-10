@@ -1,4 +1,4 @@
-package com.example.pricetag.config.exceptions;
+package com.example.pricetag.exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
 
