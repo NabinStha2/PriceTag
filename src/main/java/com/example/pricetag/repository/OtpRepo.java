@@ -1,15 +1,16 @@
 package com.example.pricetag.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.example.pricetag.entity.Otp;
 import com.example.pricetag.entity.User;
 
-import java.util.Optional;
-
 @Repository
-public interface AuthRepository extends JpaRepository<User, Long> {
+public interface OtpRepo extends JpaRepository<Otp, Long> {
 
-    Optional<User> findByEmail(String userName);
+  public Optional<Otp> findByUser(User user);
 
 }

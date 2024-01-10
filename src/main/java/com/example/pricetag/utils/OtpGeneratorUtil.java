@@ -3,9 +3,9 @@ package com.example.pricetag.utils;
 import java.util.Random;
 
 import org.springframework.context.annotation.Description;
+import org.springframework.stereotype.Component;
 
-import com.example.pricetag.entity.Otp;
-
+@Component
 @Description(value = "Service for generating and validating OTP.")
 public class OtpGeneratorUtil {
 
@@ -35,7 +35,7 @@ public class OtpGeneratorUtil {
    */
   public Integer generateOTP(String key) {
     Random random = new Random();
-    int OTP = 100000 + random.nextInt(900000);
+    int OTP = 1000 + random.nextInt(9000);
     // otpCache.put(key, OTP);
     // Otp
     // .builder()

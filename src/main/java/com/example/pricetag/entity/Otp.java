@@ -1,5 +1,7 @@
 package com.example.pricetag.entity;
 
+import java.time.LocalDateTime;
+
 import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.*;
@@ -22,7 +24,7 @@ public class Otp {
 
   @CreationTimestamp
   @Column(updatable = false, name = "otp_generation_time")
-  private int otpGenerationTime;
+  private LocalDateTime otpGenerationTime;
 
   @OneToOne
   @JoinColumn(name = "user_id", referencedColumnName = "id")

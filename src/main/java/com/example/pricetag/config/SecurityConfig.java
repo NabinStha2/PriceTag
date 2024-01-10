@@ -40,7 +40,8 @@ public class SecurityConfig {
     ColorLogger.logInfo("I am inside SecurityFilterChain");
     return httpSecurity.csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/auth/login", "/auth/register")
+            .requestMatchers("/auth/login", "/auth/register", "/auth/verify-otp", "/auth/forgot-password",
+                "/auth/verify-forgot-password-otp")
             .permitAll()
             .requestMatchers("/user/**")
             .hasRole(AppUserRole.ROLE_USER.name().split("_")[1])

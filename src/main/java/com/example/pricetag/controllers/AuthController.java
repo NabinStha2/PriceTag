@@ -6,7 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.pricetag.dto.AuthDto;
 import com.example.pricetag.dto.ForgotPasswordDto;
+import com.example.pricetag.dto.OtpDto;
 import com.example.pricetag.dto.RefreshTokenDto;
 import com.example.pricetag.entity.User;
 import com.example.pricetag.exceptions.ApplicationException;
@@ -37,21 +40,31 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<AuthResponseDto> register(@RequestBody User user) throws ApplicationException {
-    return new ResponseEntity<AuthResponseDto>(authService.register(user), HttpStatus.CREATED);
+  public ResponseEntity<CommonResponseDto> register(@RequestBody User user) throws ApplicationException {
+    return new ResponseEntity<CommonResponseDto>(authService.register(user), HttpStatus.CREATED);
+  }
+
+  @PostMapping("/verify-otp")
+  public ResponseEntity<AuthResponseDto> verifyOtp(@RequestBody OtpDto otpDto) throws ApplicationException {
+    return new ResponseEntity<AuthResponseDto>(authService.verifyOtp(otpDto), HttpStatus.CREATED);
   }
 
   @PostMapping("/login")
   public ResponseEntity<AuthResponseDto> login(@RequestBody AuthDto authDto) throws Exception {
-    Authentication authenticate = authenticationManager
-        .authenticate(new UsernamePasswordAuthenticationToken(authDto.getEmail(),
-            authDto.getPassword()));
+    try {
+      Authentication authenticate = authenticationManager
+          .authenticate(new UsernamePasswordAuthenticationToken(authDto.getEmail(),
+              authDto.getPassword()));
 
-    if (authenticate.isAuthenticated()) {
-      return ResponseEntity.ok(authService.login(authDto));
-    } else {
-      throw new ApplicationException("401", "Not Authenticated",
-          HttpStatus.UNAUTHORIZED);
+      if (authenticate.isAuthenticated()) {
+        return ResponseEntity.ok(authService.login(authDto));
+      } else {
+        throw new ApplicationException("401", "Not Authenticated",
+            HttpStatus.UNAUTHORIZED);
+      }
+    } catch (AuthenticationException e) {
+      throw new ApplicationException("400", "Password incorrect",
+          HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -63,9 +76,14 @@ public class AuthController {
   }
 
   @PostMapping("/forgot-password")
-  public ResponseEntity<CommonResponseDto> forgotPassword(@RequestBody ForgotPasswordDto forgotPasswordDto,
-      @RequestHeader(value = "Authorization") String jwtToken)
+  public ResponseEntity<CommonResponseDto> forgotPassword(@RequestBody ForgotPasswordDto forgotPasswordDto)
       throws ApplicationException {
-    return ResponseEntity.ok(authService.forgotPassword(forgotPasswordDto, jwtToken));
+    return ResponseEntity.ok(authService.forgotPassword(forgotPasswordDto));
+  }
+
+  @PatchMapping("/verify-forgot-password-otp")
+  public ResponseEntity<CommonResponseDto> verifyForgotPasswordOtp(@RequestBody OtpDto otpDto)
+      throws ApplicationException {
+    return ResponseEntity.ok(authService.verifyForgotPasswordOtp(otpDto));
   }
 }
