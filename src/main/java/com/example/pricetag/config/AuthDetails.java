@@ -20,12 +20,14 @@ public class AuthDetails implements UserDetails {
     userName = user.getEmail();
     password = user.getPassword();
 
-    ColorLogger.logInfo(user.getAppUserRole().name());
+    // ColorLogger.logInfo("AuthDetails :: AppUserRole :: " +
+    // user.getAppUserRole().name());
     authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getAppUserRole().name()));
   }
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
+    ColorLogger.logInfo("AuthDetails :: authorities :: " + authorities.toString());
     return authorities;
   }
 

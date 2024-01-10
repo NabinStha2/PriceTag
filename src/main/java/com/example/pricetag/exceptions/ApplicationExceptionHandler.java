@@ -9,11 +9,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.example.pricetag.utils.ColorLogger;
 
 import ch.qos.logback.core.spi.ErrorCodes;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
@@ -54,6 +57,23 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
         request.getMethod(),
         LocalDateTime.now());
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(value = { ExpiredJwtException.class })
+  public ResponseEntity<?> handleExpiredJwtException(ExpiredJwtException ex, HttpServletRequest request) {
+    // String requestUri = ((ServletWebRequest)
+    // request).getRequest().getRequestURI().toString();
+    var guid = UUID.randomUUID().toString();
+    var response = new ApiErrorResponse(
+        guid,
+        ErrorCodes.EMPTY_MODEL_STACK,
+        ex.getMessage(),
+        HttpStatus.BAD_REQUEST.value(),
+        HttpStatus.BAD_REQUEST.name(),
+        request.getRequestURI(),
+        request.getMethod(),
+        LocalDateTime.now());
+    return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
   }
 
 }

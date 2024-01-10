@@ -17,7 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.example.pricetag.enums.AppUserRole;
 import com.example.pricetag.services.AuthService;
+import com.example.pricetag.utils.ColorLogger;
 
 @Configuration
 @EnableWebSecurity
@@ -29,15 +31,19 @@ public class SecurityConfig {
 
   @Bean
   public UserDetailsService userDetailsService() {
+    ColorLogger.logInfo("I am inside UserDetailsService");
     return new AuthService();
   }
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    ColorLogger.logInfo("I am inside SecurityFilterChain");
     return httpSecurity.csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/auth/login", "/auth/register")
             .permitAll()
+            .requestMatchers("/user/**")
+            .hasRole(AppUserRole.ROLE_USER.name().split("_")[1])
             .anyRequest().authenticated())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider())
@@ -47,6 +53,7 @@ public class SecurityConfig {
 
   @Bean
   public AuthenticationProvider authenticationProvider() {
+    ColorLogger.logInfo("I am inside AuthenticationProvider");
     DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
     authenticationProvider.setHideUserNotFoundExceptions(false);
     authenticationProvider.setUserDetailsService(userDetailsService());
@@ -61,6 +68,7 @@ public class SecurityConfig {
 
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    ColorLogger.logInfo("I am inside AuthenticationManager");
     return config.getAuthenticationManager();
   }
 

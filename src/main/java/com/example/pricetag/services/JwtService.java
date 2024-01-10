@@ -8,6 +8,9 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import com.example.pricetag.exceptions.ApplicationException;
+import com.example.pricetag.utils.ColorLogger;
+
 import java.security.Key;
 import java.util.*;
 import java.util.function.Function;

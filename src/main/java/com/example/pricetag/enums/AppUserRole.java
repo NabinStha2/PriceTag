@@ -1,6 +1,7 @@
 package com.example.pricetag.enums;
 
 public enum AppUserRole {
-  ADMIN,
-  USER,
+  ROLE_ADMIN,
+  ROLE_USER,
+  ROLE_ANONYMOUS,
 }

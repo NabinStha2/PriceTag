@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.example.pricetag.enums.AppUserRole;
 
@@ -23,7 +24,7 @@ public class User {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  private int id;
+  private Long id;
 
   @Column(name = "name", length = 100, nullable = false)
   private String name;
@@ -34,8 +35,15 @@ public class User {
   @Column(name = "password", nullable = false)
   private String password;
 
+  @Column(name = "phoneNumber", nullable = false)
+  private Long phoneNumber;
+
   @Enumerated(EnumType.STRING)
   private AppUserRole appUserRole;
+
+  @Column(name = "verified")
+  @Value("false")
+  private boolean verified;
 
   @CreationTimestamp
   @Column(updatable = false, name = "created_at")

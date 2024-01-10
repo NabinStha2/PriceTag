@@ -9,9 +9,11 @@ import com.example.pricetag.entity.User;
 import com.example.pricetag.enums.AppUserRole;
 
 @Repository
-public interface UserRepo extends JpaRepository<User, Integer> {
+public interface UserRepo extends JpaRepository<User, Long> {
 
   Optional<User> findByEmail(String email);
+
+  Optional<User> findById(int id);
 
   User findByAppUserRole(AppUserRole appUserRole);
 
