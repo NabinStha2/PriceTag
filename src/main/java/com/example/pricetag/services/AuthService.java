@@ -69,6 +69,7 @@ public class AuthService implements UserDetailsService {
     ColorLogger
         .logInfo("I am inside AuthService register" + user.toString());
     User existingUser = this.authRepository.findByEmail(user.getEmail()).orElse(null);
+
     if (existingUser == null || !existingUser.isVerified()) {
       Integer otpCode = otpGeneratorUtil.generateOTP(user.getEmail());
       try {
@@ -86,8 +87,9 @@ public class AuthService implements UserDetailsService {
       if (existingOtp != null) {
         otpRepo.delete(existingOtp);
       }
-
-      authRepository.delete(existingUser);
+      if (existingUser != null) {
+        authRepository.delete(existingUser);
+      }
 
       User newUser = new User();
       newUser.setEmail(user.getEmail());
@@ -96,6 +98,7 @@ public class AuthService implements UserDetailsService {
       newUser.setPassword(passwordEncoder.encode(user.getPassword()));
       newUser.setAppUserRole(AppUserRole.ROLE_USER);
       newUser.setVerified(false);
+      ColorLogger.logInfo("user :: " + newUser);
       authRepository.save(newUser);
 
       Otp newOtp = new Otp();
@@ -123,7 +126,7 @@ public class AuthService implements UserDetailsService {
 
       if (existingOtp.isPresent() && existingOtp.get().getOtpCode() == otpDto.getOtpCode()
           && Duration.between(existingOtp.get().getOtpGenerationTime(),
-              LocalDateTime.now()).getSeconds() < (1 * 60)) {
+              LocalDateTime.now()).getSeconds() < (5 * 60)) {
         otpRepo.delete(existingOtp.get());
         existingUser.setVerified(true);
         userRepo.save(existingUser);
@@ -189,44 +192,47 @@ public class AuthService implements UserDetailsService {
 
   public CommonResponseDto forgotPassword(ForgotPasswordDto forgotPasswordDto)
       throws ApplicationException {
-    try {
-      ColorLogger
-          .logInfo("I am inside AuthService forgotPassword");
-      // String email = jwtService.extractUserName(jwtToken);
-      User existingUser = authRepository.findByEmail(forgotPasswordDto.getEmail())
-          .orElseThrow(() -> new ApplicationException("404", "Email not found",
-              HttpStatus.NOT_FOUND));
-      if (existingUser != null) {
-        Integer otpCode = otpGeneratorUtil.generateOTP(existingUser.getEmail());
-        try {
-          EmailDto newEmailDto = new EmailDto();
-          newEmailDto.setRecipients(List.of(existingUser.getEmail()));
-          newEmailDto.setSubject("Otp Code");
-          newEmailDto.setBody("Your otp code is: " + otpCode);
-          emailUtils.sendOtpEmail(newEmailDto);
-        } catch (MessagingException e) {
-          throw new RuntimeException("Unable to send otp please try again");
-        }
-
-        Otp existingOtp = otpRepo.findByUser(existingUser).orElse(null);
-
-        if (existingOtp != null) {
-          otpRepo.delete(existingOtp);
-        }
-        Otp newOtp = new Otp();
-        newOtp.setOtpCode(otpCode);
-        newOtp.setUser(existingUser);
-        otpRepo.save(newOtp);
-
-        return CommonResponseDto
-            .builder()
-            .message("Otp sent successfully")
-            .statusCode("200")
-            .build();
+    // try {
+    ColorLogger
+        .logInfo("I am inside AuthService forgotPassword");
+    // String email = jwtService.extractUserName(jwtToken);
+    User existingUser = authRepository.findByEmail(forgotPasswordDto.getEmail())
+        .orElseThrow(() -> new ApplicationException("404", "Email not found",
+            HttpStatus.NOT_FOUND));
+    if (existingUser != null) {
+      Integer otpCode = otpGeneratorUtil.generateOTP(existingUser.getEmail());
+      try {
+        EmailDto newEmailDto = new EmailDto();
+        newEmailDto.setRecipients(List.of(existingUser.getEmail()));
+        newEmailDto.setSubject("Otp Code");
+        newEmailDto.setBody("Your otp code is: " + otpCode);
+        emailUtils.sendOtpEmail(newEmailDto);
+      } catch (MessagingException e) {
+        throw new RuntimeException("Unable to send otp please try again");
       }
-    } catch (Exception e) {
-      ColorLogger.logError("I am inside forgotPassword Error :: " + e.getMessage());
+
+      Otp existingOtp = otpRepo.findByUser(existingUser).orElse(null);
+
+      if (existingOtp != null) {
+        otpRepo.delete(existingOtp);
+      }
+      Otp newOtp = new Otp();
+      newOtp.setOtpCode(otpCode);
+      newOtp.setUser(existingUser);
+      otpRepo.save(newOtp);
+
+      return CommonResponseDto
+          .builder()
+          .message("Otp sent successfully")
+          .statusCode("200")
+          .build();
     }
+    // } catch (Exception e) {
+    // ColorLogger.logError("I am inside forgotPassword Error :: " +
+    // e.getMessage());
+    // throw new ApplicationException("400", e.getMessage(),
+    // HttpStatus.BAD_REQUEST);
+    // }
     return null;
   }
 

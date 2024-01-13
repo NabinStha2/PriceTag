@@ -1,5 +1,6 @@
 package com.example.pricetag.responses;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CommonResponseDto {
   private String message;
-  private Map<String, Integer> data;
+  @Builder.Default
+  private Map<String, ?> data = new HashMap<>();
   private String statusCode;
 }

@@ -1,6 +1,8 @@
 package com.example.pricetag.entity;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import com.example.pricetag.enums.AppUserRole;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,6 +47,11 @@ public class User {
   @Column(name = "verified")
   @Value("false")
   private boolean verified;
+
+  @OneToMany
+  @JoinColumn(name = "file_id")
+  @Builder.Default
+  private List<File> file = new ArrayList<>();
 
   @CreationTimestamp
   @Column(updatable = false, name = "created_at")

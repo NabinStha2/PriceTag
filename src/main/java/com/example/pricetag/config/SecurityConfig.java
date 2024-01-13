@@ -41,7 +41,7 @@ public class SecurityConfig {
     return httpSecurity.csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/auth/login", "/auth/register", "/auth/verify-otp", "/auth/forgot-password",
-                "/auth/verify-forgot-password-otp")
+                "/auth/verify-forgot-password-otp", "/auth/welcome")
             .permitAll()
             .requestMatchers("/user/**")
             .hasRole(AppUserRole.ROLE_USER.name().split("_")[1])
