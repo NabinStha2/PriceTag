@@ -3,6 +3,11 @@ package com.example.pricetag.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,23 +20,27 @@ import lombok.NoArgsConstructor;
 @Table(name = "subCategory")
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({ "category", "product" })
 public class SubCategory {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  @Column(name = "subcategory_id")
   private Long id;
 
   @Column(name = "name")
   private String subCategoryName;
 
-  @ManyToOne
-  @JoinColumn(name = "category_id")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "category_id", nullable = false)
   private Category category;
 
-  @OneToMany(fetch = FetchType.LAZY)
-  @JoinColumn(name = "product_id")
-  @Builder.Default
-  private List<Product> product = new ArrayList<>();
+  @OneToMany(mappedBy = "subCategory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  private List<Product> product;
+
+  // // Add @JsonIgnore here to prevent infinite recursion
+  // @JsonIgnore
+  // public Category getCategory() {
+  // return category;
+  // }
 
 }

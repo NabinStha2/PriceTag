@@ -1,5 +1,9 @@
 package com.example.pricetag.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,11 +16,11 @@ import lombok.NoArgsConstructor;
 @Table(name = "product")
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({ "category", "subCategory" })
 public class Product {
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  @Column(name = "product_id")
   private Long id;
 
   @Column(name = "name", nullable = false)
@@ -29,7 +33,8 @@ public class Product {
   @JoinColumn(name = "category_id")
   private Category category;
 
-  @ManyToOne
+  @JsonManagedReference
+  @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "subcategory_id")
   private SubCategory subCategory;
 
