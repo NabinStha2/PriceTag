@@ -7,14 +7,12 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.entity.SubCategory;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.responses.CommonResponseDto;
-import com.example.pricetag.responses.SubCategoryWithProductsResponseDto;
 import com.example.pricetag.services.SubCategoryService;
 import com.example.pricetag.utils.ColorLogger;
 
@@ -25,7 +23,7 @@ public class SubCategoryController {
   @Autowired
   private SubCategoryService subCategoryService;
 
-  @RequestMapping(name = "", method = RequestMethod.GET)
+  @GetMapping("/")
   public ResponseEntity<CommonResponseDto> getAllSubCategories() throws ApplicationException {
     return ResponseEntity.ok(subCategoryService.getAllSubCategories());
   }
@@ -41,12 +39,12 @@ public class SubCategoryController {
   }
 
   @GetMapping("/{subCategoryId}/products")
-  public ResponseEntity<SubCategoryWithProductsResponseDto> getSubCategoryWithProducts(
+  public ResponseEntity<CommonResponseDto> getProductsWithSubCategoryId(
       @PathVariable(name = "subCategoryId") Long subCategoryId)
       throws ApplicationException {
     SubCategoryDto subCategoryDto = new SubCategoryDto();
     subCategoryDto.setId(subCategoryId);
-    return ResponseEntity.ok(subCategoryService.getSubCategoryWithProducts(subCategoryDto));
+    return ResponseEntity.ok(subCategoryService.getProductsWithSubCategoryId(subCategoryDto));
   }
 
 }

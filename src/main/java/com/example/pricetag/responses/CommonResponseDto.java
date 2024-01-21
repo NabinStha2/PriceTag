@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CommonResponseDto {
   private String message;
-  @Builder.Default
-  private Map<String, ?> data = new HashMap<>();
-  private String statusCode;
+  private Object data;
+  private Boolean success;
 }

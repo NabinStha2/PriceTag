@@ -1,7 +1,5 @@
 package com.example.pricetag.dto;
 
-import lombok.NonNull;
-
 public class ProductDto {
   private Long categoryId;
   private Long subCategoryId;
@@ -10,7 +8,7 @@ public class ProductDto {
   private Double actualPrice;
   private Double discountedPrice;
 
-  public ProductDto(@NonNull Long categoryId, @NonNull Long subCategoryId, String name, String description,
+  public ProductDto(Long categoryId, Long subCategoryId, String name, String description,
       Double actualPrice, Double discountedPrice) {
     this.categoryId = categoryId;
     this.subCategoryId = subCategoryId;

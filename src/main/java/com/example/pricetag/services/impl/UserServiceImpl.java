@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
     return CommonResponseDto
         .builder()
         .message("User has been deleted")
-        .statusCode("200")
+        .success(true)
         .build();
 
   }

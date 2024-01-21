@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import com.example.pricetag.dto.ProductDto;
 import com.example.pricetag.entity.Category;
-import com.example.pricetag.entity.Product;
 import com.example.pricetag.entity.SubCategory;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.CategoryRepo;
@@ -34,40 +33,50 @@ public class ProductServiceImpl implements ProductService {
       Optional<Category> existingCategory = categoryRepo.findById(productDto.getCategoryId());
       Optional<SubCategory> existingSubCategory = subCategoryRepo.findById(productDto.getSubCategoryId());
 
-      if (existingCategory.isPresent() && existingSubCategory.isPresent()) {
-        Category category = existingCategory.get();
-        SubCategory subCategory = existingSubCategory.get();
+      // if (existingCategory.isPresent() && existingSubCategory.isPresent()) {
+      // Category category = existingCategory.get();
+      // SubCategory subCategory = existingSubCategory.get();
 
-        // Optional<SubCategory> filteredSubCategory =
-        // category.getSubCategories().stream().filter(data -> {
-        // return data.getId().equals(subCategory.getId());
-        // }).findFirst();
-        // if (filteredSubCategory.isPresent()) {
-        // ColorLogger.logInfo(filteredSubCategory.get().toString());
-        // } else {
-        // ColorLogger.logError("No even number found in the list.");
-        // }
+      // Optional<SubCategory> filteredSubCategory =
+      // category.getSubCategories().stream().filter(data -> {
+      // return data.getId().equals(subCategory.getId());
+      // }).findFirst();
 
-        Product newProduct = new Product();
-        newProduct.setCategory(category);
-        newProduct.setSubCategory(subCategory);
-        newProduct.setName(productDto.getName());
-        newProduct.setDescription(productDto.getDescription());
-        newProduct.setActualPrice(productDto.getActualPrice());
-        newProduct.setDiscountedPrice(productDto.getDiscountedPrice());
+      // // if (filteredSubCategory.isPresent()) {
+      // // ColorLogger.logInfo(filteredSubCategory.get().toString());
+      // // } else {
+      // // ColorLogger.logError("No even number found in the list.");
+      // // }
 
-        productRepo.save(newProduct);
+      // if (filteredSubCategory.isPresent()) {
+      // Product newProduct = new Product();
+      // newProduct.setCategory(category);
+      // newProduct.setSubCategory(subCategory);
+      // newProduct.setName(productDto.getName());
+      // newProduct.setDescription(productDto.getDescription());
+      // newProduct.setActualPrice(productDto.getActualPrice());
+      // newProduct.setDiscountedPrice(productDto.getDiscountedPrice());
 
-        return CommonResponseDto
-            .builder()
-            .message("Product has been created successfully")
-            .statusCode("201")
-            .build();
+      // productRepo.save(newProduct);
 
-      } else {
-        throw new ApplicationException("404", "Category or SubCategory not found", HttpStatus.NOT_FOUND);
-      }
-    } catch (Exception e) {
+      return CommonResponseDto
+          .builder()
+          // .data(newProduct)
+          .message("Product has been created successfully")
+          .success(true)
+          .build();
+      // } else {
+      // throw new ApplicationException("404", "SubCategory is not present inside
+      // category", HttpStatus.NOT_FOUND);
+      // }
+
+      // } else {
+      // throw new ApplicationException("404", "Category or SubCategory not found",
+      // HttpStatus.NOT_FOUND);
+      // }
+    } catch (
+
+    Exception e) {
       throw new ApplicationException("500", "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

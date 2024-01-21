@@ -16,7 +16,6 @@ import com.example.pricetag.entity.SubCategory;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.SubCategoryRepo;
 import com.example.pricetag.responses.CommonResponseDto;
-import com.example.pricetag.responses.SubCategoryWithProductsResponseDto;
 import com.example.pricetag.services.SubCategoryService;
 
 @Service
@@ -47,8 +46,8 @@ public class SubCategoryServiceImpl implements SubCategoryService {
     return CommonResponseDto
         .builder()
         .message("Success")
-        .data(Map.of("subCategories", subCategoryDto))
-        .statusCode("200")
+        .data(Map.of("results", subCategoryDto))
+        .success(true)
         .build();
 
   }
@@ -76,19 +75,19 @@ public class SubCategoryServiceImpl implements SubCategoryService {
   }
 
   @Override
-  public SubCategoryWithProductsResponseDto getSubCategoryWithProducts(SubCategoryDto subCategoryDto)
-      throws ApplicationException {
+  public CommonResponseDto getProductsWithSubCategoryId(SubCategoryDto subCategoryDto)
+    throws ApplicationException {
 
     Optional<SubCategory> existingSubCategoryOptional = subCategoryRepo.findById(subCategoryDto.getId());
     if (existingSubCategoryOptional.isPresent()) {
 
       SubCategory existingSubCategory = existingSubCategoryOptional.get();
 
-      return SubCategoryWithProductsResponseDto
+      return CommonResponseDto
           .builder()
-          .id(existingSubCategory.getId())
-          .subCategoryName(existingSubCategory.getSubCategoryName())
-          .products(existingSubCategory.getProduct())
+          .message("Product fetch Successfully")
+          .data(Map.of("results", existingSubCategory.getProduct()))
+          .success(true)
           .build();
     } else {
       throw new ApplicationException("404", "Sub Category not found", HttpStatus.NOT_FOUND);

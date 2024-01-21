@@ -108,7 +108,7 @@ public class AuthService implements UserDetailsService {
 
       return CommonResponseDto
           .builder()
-          .statusCode("200")
+          .success(true)
           .message("Otp code has been sent successfully")
           .build();
 
@@ -124,15 +124,22 @@ public class AuthService implements UserDetailsService {
     if (existingUser != null && !existingUser.isVerified()) {
       Optional<Otp> existingOtp = otpRepo.findByUser(existingUser);
 
-      if (existingOtp.isPresent() && existingOtp.get().getOtpCode() == otpDto.getOtpCode()
-          && Duration.between(existingOtp.get().getOtpGenerationTime(),
+      if (existingOtp.isPresent()) {
+        if (existingOtp.get().getOtpCode() == otpDto.getOtpCode()) {
+          if (Duration.between(existingOtp.get().getOtpGenerationTime(),
               LocalDateTime.now()).getSeconds() < (5 * 60)) {
-        otpRepo.delete(existingOtp.get());
-        existingUser.setVerified(true);
-        userRepo.save(existingUser);
+            otpRepo.delete(existingOtp.get());
+            existingUser.setVerified(true);
+            userRepo.save(existingUser);
+          } else {
+            otpRepo.delete(existingOtp.get());
+            throw new ApplicationException("400", "Otp Expired", HttpStatus.BAD_REQUEST);
+          }
+        } else {
+          throw new ApplicationException("400", "Otp incorrect", HttpStatus.BAD_REQUEST);
+        }
       } else {
-        otpRepo.delete(existingOtp.get());
-        throw new ApplicationException("400", "Otp Expired", HttpStatus.BAD_REQUEST);
+        throw new ApplicationException("404", "Otp not found", HttpStatus.NOT_FOUND);
       }
 
       RefreshToken refreshToken = refreshTokenService
@@ -224,7 +231,7 @@ public class AuthService implements UserDetailsService {
       return CommonResponseDto
           .builder()
           .message("Otp sent successfully")
-          .statusCode("200")
+          .success(true)
           .build();
     }
     // } catch (Exception e) {
@@ -266,7 +273,7 @@ public class AuthService implements UserDetailsService {
       return CommonResponseDto
           .builder()
           .message("Password reset successfully")
-          .statusCode("200")
+          .success(true)
           .build();
 
     } else {

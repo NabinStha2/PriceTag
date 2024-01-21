@@ -11,7 +11,7 @@ public class ColorLogger {
         LOGGER.debug("\u001B[34m" + logging + "\u001B[0m");
     }
 
-    public static void logInfo(String logging) {
+    public static void logInfo(Object logging) {
         LOGGER.info("\u001B[32m" + logging + "\u001B[0m");
     }
 

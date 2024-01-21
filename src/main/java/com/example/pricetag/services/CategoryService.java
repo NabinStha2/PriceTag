@@ -3,6 +3,7 @@ package com.example.pricetag.services;
 import org.springframework.stereotype.Service;
 
 import com.example.pricetag.dto.CategoryDto;
+import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.entity.Category;
 import com.example.pricetag.entity.SubCategory;
 import com.example.pricetag.responses.CommonResponseDto;
@@ -13,8 +14,10 @@ public interface CategoryService {
 
   public Category getByCategoryName();
 
-  public Category createCategory(Category category);
+  public Category createCategory(CategoryDto categoryDto);
 
-  public SubCategory createSubCategory(CategoryDto categoryDto);
+  public SubCategory createSubCategory(SubCategoryDto subCategoryDto);
+
+  public CommonResponseDto getSubCategoriesWithCategoryId(CategoryDto categoryDto);
 
 }

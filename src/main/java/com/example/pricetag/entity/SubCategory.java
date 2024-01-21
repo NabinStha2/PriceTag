@@ -30,17 +30,18 @@ public class SubCategory {
   @Column(name = "name")
   private String subCategoryName;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @JsonBackReference
+  @ManyToOne
   @JoinColumn(name = "category_id", nullable = false)
   private Category category;
 
   @OneToMany(mappedBy = "subCategory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private List<Product> product;
 
-  // // Add @JsonIgnore here to prevent infinite recursion
-  // @JsonIgnore
-  // public Category getCategory() {
-  // return category;
-  // }
+  // Add @JsonIgnore here to prevent infinite recursion
+  @JsonIgnore
+  public Category getCategory() {
+    return category;
+  }
 
 }

@@ -30,12 +30,12 @@ public class Product {
   private String description;
 
   @ManyToOne
-  @JoinColumn(name = "category_id")
+  @JoinColumn(name = "category_id", nullable = false)
   private Category category;
 
   @JsonManagedReference
   @ManyToOne(cascade = CascadeType.ALL)
-  @JoinColumn(name = "subcategory_id")
+  @JoinColumn(name = "subcategory_id", nullable = false)
   private SubCategory subCategory;
 
   @Column(name = "actual_price", nullable = false)

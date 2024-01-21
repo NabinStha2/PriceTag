@@ -44,7 +44,8 @@ public class SecurityConfig {
                 "/auth/verify-forgot-password-otp", "/auth/welcome")
             .permitAll()
             .requestMatchers("/user/**")
-            .hasRole(AppUserRole.ROLE_USER.name().split("_")[1])
+            .hasAnyRole(AppUserRole.ROLE_USER.name().split("_")[1],
+            AppUserRole.ROLE_ADMIN.name().split("_")[1])
             .anyRequest().authenticated())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider())

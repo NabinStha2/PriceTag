@@ -24,7 +24,7 @@ public class UserController {
   private UserService userService;
 
   @GetMapping("/")
-  @PreAuthorize("hasRole('USER')")
+  @PreAuthorize("hasAnyRole('USER','ADMIN')")
   public ResponseEntity<UserResponse> getMyUser() {
     UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
         .getPrincipal();
@@ -33,7 +33,7 @@ public class UserController {
   }
 
   @PatchMapping("/edit")
-  @PreAuthorize("hasRole('USER')")
+  @PreAuthorize("hasAnyRole('USER','ADMIN')")
   public ResponseEntity<UserResponse> updateUser(@RequestBody User user) {
     ColorLogger.logInfo("I am inside updateUser Controller " + user);
     return ResponseEntity.ok(userService.updateUser(user));
