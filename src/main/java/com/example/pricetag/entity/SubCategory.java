@@ -35,7 +35,8 @@ public class SubCategory {
   @JoinColumn(name = "category_id", nullable = false)
   private Category category;
 
-  @OneToMany(mappedBy = "subCategory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "subCategory", cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST,
+      CascadeType.REFRESH }, fetch = FetchType.LAZY)
   private List<Product> product;
 
   // Add @JsonIgnore here to prevent infinite recursion

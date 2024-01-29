@@ -1,13 +1,16 @@
 package com.example.pricetag.services;
 
-import org.springframework.stereotype.Service;
-
 import com.example.pricetag.dto.ProductDto;
 import com.example.pricetag.responses.CommonResponseDto;
+import org.springframework.stereotype.Service;
 
 @Service
 public interface ProductService {
 
-  public CommonResponseDto createProduct(ProductDto productDto);
+    CommonResponseDto createProduct(ProductDto productDto);
+
+    CommonResponseDto getAllProducts();
+
+    CommonResponseDto deleteProductById(Long productId);
 
 }

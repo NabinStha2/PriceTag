@@ -22,34 +22,33 @@ import com.example.pricetag.utils.ColorLogger;
 @RequestMapping("/category")
 public class CategoryController {
 
-  @Autowired
-  private CategoryService categoryService;
+    @Autowired
+    private CategoryService categoryService;
 
-  @GetMapping("/")
-  public ResponseEntity<CommonResponseDto> getAllCategories() throws ApplicationException {
-    return ResponseEntity.ok(categoryService.getAllCategories());
-  }
+    @GetMapping("/")
+    public ResponseEntity<CommonResponseDto> getAllCategories() throws ApplicationException {
+        return ResponseEntity.ok(categoryService.getAllCategories());
+    }
 
-  @GetMapping("/{categoryId}/subCategories")
-  public ResponseEntity<CommonResponseDto> getSubCategoriesWithCategoryId(
-      @PathVariable(name = "categoryId") Long categoryId) throws ApplicationException {
-    CategoryDto categoryDto = new CategoryDto();
-    categoryDto.setId(categoryId);
-    return ResponseEntity.ok(categoryService.getSubCategoriesWithCategoryId(categoryDto));
-  }
+    @GetMapping("/{categoryId}/subCategories")
+    public ResponseEntity<CommonResponseDto> getSubCategoriesWithCategoryId(
+            @PathVariable(name = "categoryId") Long categoryId) throws ApplicationException {
+        CategoryDto categoryDto = new CategoryDto();
+        categoryDto.setId(categoryId);
+        return ResponseEntity.ok(categoryService.getSubCategoriesWithCategoryId(categoryDto));
+    }
 
-  @PostMapping("/add")
-  public ResponseEntity<Category> createCategory(@RequestBody CategoryDto categoryDto) throws ApplicationException {
-    return ResponseEntity.ok(categoryService.createCategory(categoryDto));
-  }
+    @PostMapping("/add")
+    public ResponseEntity<Category> createCategory(@RequestBody CategoryDto categoryDto) throws ApplicationException {
+        return ResponseEntity.ok(categoryService.createCategory(categoryDto));
+    }
 
-  @PostMapping("/{categoryId}/subCategory/add")
-  public ResponseEntity<SubCategory> createSubCategory(@PathVariable(name = "categoryId") Long categoryId,
-      @RequestBody SubCategoryDto subCategoryDto)
-      throws ApplicationException {
-    subCategoryDto.setId(categoryId);
-    ColorLogger.logInfo(subCategoryDto.toString());
-    return ResponseEntity.ok(categoryService.createSubCategory(subCategoryDto));
-  }
+    @PostMapping("/{categoryId}/subCategory/add")
+    public ResponseEntity<CommonResponseDto> createSubCategory(@PathVariable(name = "categoryId") Long categoryId,
+            @RequestBody SubCategoryDto subCategoryDto)
+            throws ApplicationException {
+        ColorLogger.logInfo(subCategoryDto.toString());
+        return ResponseEntity.ok(categoryService.createSubCategory(categoryId, subCategoryDto));
+    }
 
 }

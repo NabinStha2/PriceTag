@@ -28,13 +28,11 @@ public class SubCategoryController {
     return ResponseEntity.ok(subCategoryService.getAllSubCategories());
   }
 
-  @PatchMapping("/{subCategoryId}/edit")
-  public ResponseEntity<SubCategory> editSubCategory(@PathVariable(name = "subCategoryId") Long subCategoryId,
+  @PatchMapping("/edit")
+  public ResponseEntity<CommonResponseDto> editSubCategory(
       @RequestBody SubCategoryDto subCategoryDto)
       throws ApplicationException {
-    subCategoryDto.setId(subCategoryId);
     ColorLogger.logInfo(subCategoryDto.toString());
-
     return ResponseEntity.ok(subCategoryService.editSubCategory(subCategoryDto));
   }
 

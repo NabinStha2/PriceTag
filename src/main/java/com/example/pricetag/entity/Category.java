@@ -30,7 +30,7 @@ public class Category {
   private String categoryName;
 
   @JsonManagedReference
-  @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "category", cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
   private List<SubCategory> subCategories;
 
   // Add @JsonIgnore here to prevent infinite recursion

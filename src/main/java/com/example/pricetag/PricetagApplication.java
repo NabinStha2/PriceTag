@@ -10,6 +10,7 @@ public class PricetagApplication {
 		SpringApplication.run(PricetagApplication.class, args);
 	}
 
+
 	// public void run(String... args) {
 	// User adminAccount = userRepo.findByAppUserRole(AppUserRole.ADMIN);
 	// if (adminAccount == null) {

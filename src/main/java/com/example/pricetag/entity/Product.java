@@ -34,7 +34,7 @@ public class Product {
   private Category category;
 
   @JsonManagedReference
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
   @JoinColumn(name = "subcategory_id", nullable = false)
   private SubCategory subCategory;
 
