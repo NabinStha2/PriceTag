@@ -7,7 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -26,7 +29,7 @@ public class Product {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "description", nullable = false, columnDefinition = "longtext")
     private String description;
 
     @ManyToOne
@@ -47,5 +50,20 @@ public class Product {
 
     @Column(name = "discounted_price")
     private Double discountedPrice;
+
+    @Column(name = "quantity")
+    private Long quantity;
+
+    @Column(name = "is_InStock")
+    private Boolean isInStock;
+
+    @CreationTimestamp
+    @Column(updatable = false, name = "created_at")
+    private Date createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Date updatedAt;
+
 
 }

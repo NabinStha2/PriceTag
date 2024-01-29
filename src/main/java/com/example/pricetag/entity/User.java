@@ -1,23 +1,24 @@
 package com.example.pricetag.entity;
 
 import com.example.pricetag.enums.AppUserRole;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Date;
+import java.util.List;
 
-@Data
 @Builder
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(value = {"password", "cartItems"})
 public class User {
 
     @Id
@@ -43,10 +44,8 @@ public class User {
     @Value("false")
     private boolean verified;
 
-//  @OneToMany
-//  @JoinColumn(name = "file_id")
-//  @Builder.Default
-//  private List<File> file = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> cartItems;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")

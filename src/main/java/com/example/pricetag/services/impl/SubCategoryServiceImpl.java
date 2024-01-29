@@ -41,7 +41,6 @@ public class SubCategoryServiceImpl implements SubCategoryService {
             SubCategoryDto newSubCategoryDto = new SubCategoryDto();
             newSubCategoryDto.setId(sub.getId());
             newSubCategoryDto.setSubCategoryName(sub.getSubCategoryName());
-            // newSubCategoryDto.setCategory(newCategoryDto);
 
             subCategoryDtoList.add(newSubCategoryDto);
         });
