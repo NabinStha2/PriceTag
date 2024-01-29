@@ -4,13 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ImageDto {
-    private Long productId;
-    private MultipartFile[] file;
+public class PaginationDto {
+    private int page;
+    private int limit;
+    private String sortBy;
+    private String order;
 }

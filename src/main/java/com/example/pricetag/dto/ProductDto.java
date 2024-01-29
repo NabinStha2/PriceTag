@@ -1,9 +1,12 @@
 package com.example.pricetag.dto;
 
+import com.example.pricetag.entity.Image;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -17,5 +20,6 @@ public class ProductDto {
     private String description;
     private Double actualPrice;
     private Double discountedPrice;
+    private List<Image> images;
 
 }

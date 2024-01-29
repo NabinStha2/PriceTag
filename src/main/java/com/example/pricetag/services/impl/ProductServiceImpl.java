@@ -1,6 +1,7 @@
 package com.example.pricetag.services.impl;
 
 import com.example.pricetag.dto.CategoryDto;
+import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.ProductDto;
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.entity.Category;
@@ -12,7 +13,10 @@ import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.SubCategoryRepo;
 import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.ProductService;
+import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -90,11 +94,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public CommonResponseDto getAllProducts() {
-        List<Product> products = productRepo.findAll();
-        List<ProductDto> productDtoList = new ArrayList<>();
-        products.forEach(product -> {
-            productDtoList.add(ProductDto.builder()
+    public CommonResponseDto getAllProducts(PaginationDto paginationDto) {
+        try {
+            Pageable pageable = PageRequest.of(paginationDto.getPage() - 1, paginationDto.getLimit());
+            List<Product> products = productRepo.findAll(pageable).getContent();
+
+            int productCount = productRepo.findAll().size();
+
+            List<ProductDto> productDtoList = new ArrayList<>();
+            products.forEach(product -> productDtoList.add(ProductDto.builder()
                     .productId(product.getId())
                     .name(product.getName())
                     .description(product.getDescription())
@@ -110,13 +118,61 @@ public class ProductServiceImpl implements ProductService {
                             .id(product.getSubCategory().getId())
                             .subCategoryName(product.getSubCategory().getSubCategoryName())
                             .build())
-                    .build());
-        });
-        return CommonResponseDto.builder()
-                .data(Map.of("results", productDtoList))
-                .message("Product fetched successfully")
-                .success(true)
-                .build();
+                    .images(product.getImages())
+                    .build()));
+
+            return CommonResponseDto.builder()
+                    .data(Map.of("results", productDtoList,
+                            "pagination", Map.of("totalItems", productCount,
+                                    "itemsPerPage", paginationDto.getLimit(),
+                                    "totalPages", (int) Math.ceil((double) productCount / paginationDto.getLimit()),
+                                    "currentPage", paginationDto.getPage(),
+                                    "hasNext", paginationDto.getPage() < (int) Math.ceil((double) productCount / paginationDto.getLimit()),
+                                    "hasPrevious", paginationDto.getPage() > 1
+                            )))
+                    .message("Product fetched successfully")
+                    .success(true)
+                    .build();
+        } catch (Exception e) {
+            ColorLogger.logError(e.toString());
+            throw new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Override
+    public CommonResponseDto getProductsWithSubCategoryId(SubCategoryDto subCategoryDto, PaginationDto paginationDto)
+            throws ApplicationException {
+
+        Pageable pageable = PageRequest.of(paginationDto.getPage() - 1, paginationDto.getLimit());
+
+        Optional<SubCategory> existingSubCategoryOptional = subCategoryRepo.findById(subCategoryDto.getId());
+
+
+        if (existingSubCategoryOptional.isPresent()) {
+//            SubCategory existingSubCategory = existingSubCategoryOptional.get();
+            List<Product> product = productRepo.findAllBySubCategoryId(subCategoryDto.getId(), pageable);
+
+            int productCount = productRepo.findAllBySubCategoryId(subCategoryDto.getId(), null).size();
+
+            product.forEach(d -> ColorLogger.logInfo("product :: " + d.getId()));
+
+
+            return CommonResponseDto
+                    .builder()
+                    .message("Product fetch Successfully")
+                    .data(Map.of("results", product,
+                            "pagination", Map.of("totalItems", productCount,
+                                    "itemsPerPage", paginationDto.getLimit(),
+                                    "totalPages", (int) Math.ceil((double) productCount / paginationDto.getLimit()),
+                                    "currentPage", paginationDto.getPage(),
+                                    "hasNext", paginationDto.getPage() < (int) Math.ceil((double) productCount / paginationDto.getLimit()),
+                                    "hasPrevious", paginationDto.getPage() > 1
+                            )))
+                    .success(true)
+                    .build();
+        } else {
+            throw new ApplicationException("404", "Sub Category not found", HttpStatus.NOT_FOUND);
+        }
     }
 
     @Override
@@ -136,6 +192,5 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    
 
 }

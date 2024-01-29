@@ -4,6 +4,7 @@ import com.example.pricetag.dto.CategoryDto;
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.entity.SubCategory;
 import com.example.pricetag.exceptions.ApplicationException;
+import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.SubCategoryRepo;
 import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.SubCategoryService;
@@ -22,6 +23,9 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
     @Autowired
     private SubCategoryRepo subCategoryRepo;
+
+    @Autowired
+    private ProductRepo productRepo;
 
     @Override
     public CommonResponseDto getAllSubCategories() {
@@ -63,11 +67,11 @@ public class SubCategoryServiceImpl implements SubCategoryService {
                 SubCategory savedSubCategory = subCategoryRepo.save(existingSubCategory);
 
                 return CommonResponseDto
-                .builder()
-                .message("SubCategory edited successfully")
-                .success(true)
-                .data(Map.of("results", savedSubCategory))
-                .build();
+                        .builder()
+                        .message("SubCategory edited successfully")
+                        .success(true)
+                        .data(Map.of("results", savedSubCategory))
+                        .build();
 
             } catch (DataAccessException ex) {
                 throw new ApplicationException("500", "Database error", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -77,24 +81,5 @@ public class SubCategoryServiceImpl implements SubCategoryService {
         }
     }
 
-    @Override
-    public CommonResponseDto getProductsWithSubCategoryId(SubCategoryDto subCategoryDto)
-            throws ApplicationException {
-
-        Optional<SubCategory> existingSubCategoryOptional = subCategoryRepo.findById(subCategoryDto.getId());
-        if (existingSubCategoryOptional.isPresent()) {
-
-            SubCategory existingSubCategory = existingSubCategoryOptional.get();
-
-            return CommonResponseDto
-                    .builder()
-                    .message("Product fetch Successfully")
-                    .data(Map.of("results", existingSubCategory.getProduct()))
-                    .success(true)
-                    .build();
-        } else {
-            throw new ApplicationException("404", "Sub Category not found", HttpStatus.NOT_FOUND);
-        }
-    }
 
 }

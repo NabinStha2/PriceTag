@@ -1,15 +1,13 @@
 package com.example.pricetag.services;
 
-import org.springframework.stereotype.Service;
-
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.responses.CommonResponseDto;
+import org.springframework.stereotype.Service;
 
 @Service
 public interface SubCategoryService {
-  public CommonResponseDto getAllSubCategories();
+    CommonResponseDto getAllSubCategories();
 
-  public CommonResponseDto editSubCategory(SubCategoryDto subCategoryDto);
+    CommonResponseDto editSubCategory(SubCategoryDto subCategoryDto);
 
-  public CommonResponseDto getProductsWithSubCategoryId(SubCategoryDto subCategoryDto);
 }
