@@ -125,6 +125,37 @@ public class CartItemServiceImpl implements CartItemService {
         }
     }
 
+    public CommonResponseDto deleteCartItem(Long cartItemId) {
+        User existingUser = getUser();
+
+        List<CartItem> listOfCartItems = existingUser.getCartItems();
+
+        ColorLogger.logInfo("Before listOfCartItems :: " + (long) listOfCartItems.size());
+
+        Optional<CartItem> filteredCartItem = existingUser.getCartItems().stream().filter(cartItem -> {
+            if (cartItem.getId().equals(cartItemId)) {
+                listOfCartItems.remove(cartItem);
+            }
+            return cartItem.getId().equals(cartItemId);
+        }).findFirst();
+
+        ColorLogger.logInfo("After listOfCartItems :: " + (long) listOfCartItems.size());
+
+        if (filteredCartItem.isPresent()) {
+            existingUser.setCartItems(listOfCartItems);
+            cartItemRepo.delete(filteredCartItem.get());
+
+            return CommonResponseDto
+                    .builder()
+                    .message("Cart item deleted successfully")
+                    .data(Map.of("results", filteredCartItem.get()))
+                    .success(true)
+                    .build();
+        } else {
+            throw new ApplicationException("404", "Delete of cart item id doesnot present inside user cart", HttpStatus.NOT_FOUND);
+        }
+    }
+
     private User getUser() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
                 .getPrincipal();
@@ -135,4 +166,6 @@ public class CartItemServiceImpl implements CartItemService {
         }
         return existingUser;
     }
+
+
 }

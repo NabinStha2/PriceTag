@@ -11,4 +11,6 @@ public interface CartItemService {
 
     CommonResponseDto createCart(AddCartItemDto addCartItemDto);
 
+    CommonResponseDto deleteCartItem(Long cartItemId);
+
 }

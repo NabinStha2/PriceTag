@@ -26,5 +26,11 @@ public class CartItemController {
         return ResponseEntity.ok(cartItemService.createCart(addCartItemDto));
     }
 
+    @DeleteMapping("/{cartItemId}")
+    public ResponseEntity<CommonResponseDto> deleteCartItem(@PathVariable(name = "cartItemId") Long cartItemId)
+            throws ApplicationException {
+        return ResponseEntity.ok(cartItemService.deleteCartItem(cartItemId));
+    }
+
 
 }
