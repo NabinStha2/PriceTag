@@ -1,6 +1,7 @@
 package com.example.pricetag.services.impl;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.services.CloudinaryService;
 import com.example.pricetag.utils.ColorLogger;
@@ -25,7 +26,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             HashMap<Object, Object> options = new HashMap<>();
             options.put("folder", folderName);
             Map uploadedFile = cloudinary.uploader().upload(file.getBytes(), options);
-            System.out.println(uploadedFile);
+            ColorLogger.logInfo(uploadedFile);
             String publicId = (String) uploadedFile.get("public_id");
             return cloudinary.url().secure(true).generate(publicId);
         } catch (IOException e) {
@@ -36,10 +37,11 @@ public class CloudinaryServiceImpl implements CloudinaryService {
 
 
     public Map delete(String id, String folderName) {
-        HashMap<Object, Object> options = new HashMap<>();
-        options.put("folder", folderName);
+//        HashMap<Object, Object> options = new HashMap<>();
+        Map options = ObjectUtils.emptyMap();
+//        options.put("folder", folderName);
         try {
-            ColorLogger.logInfo(id + folderName);
+            ColorLogger.logInfo(id + " :: " + folderName);
             return cloudinary.uploader().destroy(id, options);
         } catch (IOException e) {
             throw new RuntimeException(e);

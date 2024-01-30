@@ -60,7 +60,7 @@ public class ImageServiceImpl implements ImageService {
             imageList.add(Image
                     .builder()
                     .url(url)
-                    .publicId("pricetag/" + url.split("/")[url.split("/").length - 1])
+                    .publicId("pricetag/" + categoryName + "/" + subCategoryName + "/" + url.split("/")[url.split("/").length - 1])
                     .build());
         }
 

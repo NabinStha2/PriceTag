@@ -4,10 +4,12 @@ import com.example.pricetag.dto.CategoryDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.ProductDto;
 import com.example.pricetag.dto.SubCategoryDto;
+import com.example.pricetag.entity.CartItem;
 import com.example.pricetag.entity.Category;
 import com.example.pricetag.entity.Product;
 import com.example.pricetag.entity.SubCategory;
 import com.example.pricetag.exceptions.ApplicationException;
+import com.example.pricetag.repository.CartItemRepo;
 import com.example.pricetag.repository.CategoryRepo;
 import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.SubCategoryRepo;
@@ -38,6 +40,8 @@ public class ProductServiceImpl implements ProductService {
     private SubCategoryRepo subCategoryRepo;
     @Autowired
     private CloudinaryService cloudinaryService;
+    @Autowired
+    private CartItemRepo cartItemRepo;
 
     private static Product createNewProduct(ProductDto productDto, SubCategory filteredSubCategory, Category category) {
         Product newProduct = new Product();
@@ -201,6 +205,12 @@ public class ProductServiceImpl implements ProductService {
                     "pricetag/" + product.getCategory().getCategoryName()
                             + "/"
                             + product.getSubCategory().getSubCategoryName()));
+
+            CartItem existingCartItem = cartItemRepo.findByProductId(productId);
+            if (existingCartItem != null) {
+                cartItemRepo.delete(existingCartItem);
+            }
+
             productRepo.delete(product);
 
             return CommonResponseDto.builder()
