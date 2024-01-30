@@ -3,6 +3,7 @@ package com.example.pricetag.services.impl;
 import com.cloudinary.Cloudinary;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.services.CloudinaryService;
+import com.example.pricetag.utils.ColorLogger;
 import jakarta.annotation.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -34,10 +35,11 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     }
 
 
-    public Map delete(String id) {
+    public Map delete(String id, String folderName) {
         HashMap<Object, Object> options = new HashMap<>();
-        options.put("folder", "pricetag");
+        options.put("folder", folderName);
         try {
+            ColorLogger.logInfo(id + folderName);
             return cloudinary.uploader().destroy(id, options);
         } catch (IOException e) {
             throw new RuntimeException(e);

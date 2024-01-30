@@ -131,6 +131,8 @@ public class CategoryServiceImpl implements CategoryService {
                         .builder()
                         .id(subCategory.getId())
                         .subCategoryName(subCategory.getSubCategoryName())
+                        .createdAt(subCategory.getCreatedAt())
+                        .updatedAt(subCategory.getUpdatedAt())
                         .build());
             });
 

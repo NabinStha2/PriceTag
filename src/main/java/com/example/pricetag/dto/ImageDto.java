@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Date;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -13,4 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImageDto {
     private Long productId;
     private MultipartFile[] file;
+    private Date createdAt;
+    private Date updatedAt;
 }

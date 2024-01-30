@@ -17,10 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class CartItemServiceImpl implements CartItemService {
@@ -38,42 +35,44 @@ public class CartItemServiceImpl implements CartItemService {
     public CommonResponseDto getCart() {
         User existingUser = getUser();
 
-        List<CartItemDto> listOfCartItemDtos = new ArrayList<>();
+        List<CartItemDto> listOfCartItemDto = new ArrayList<>();
 
-        existingUser.getCartItems().forEach(cartItem -> {
-            listOfCartItemDtos.add(CartItemDto
-                    .builder()
-                    .id(cartItem.getId())
-                    .product(ProductDto
-                            .builder()
-                            .name(cartItem.getProduct().getName())
-                            .actualPrice(cartItem.getProduct().getActualPrice())
-                            .discountedPrice(cartItem.getProduct().getDiscountedPrice())
-                            .description(cartItem.getProduct().getDescription())
-                            .images(cartItem.getProduct().getImages())
-                            .productId(cartItem.getProduct().getId())
-                            .category(CategoryDto
-                                    .builder()
-                                    .id(cartItem.getProduct().getCategory().getId())
-                                    .categoryName(cartItem.getProduct().getCategory().getCategoryName())
-                                    .build())
-                            .subCategory(SubCategoryDto
-                                    .builder()
-                                    .id(cartItem.getProduct().getSubCategory().getId())
-                                    .subCategoryName(cartItem.getProduct().getSubCategory().getSubCategoryName())
-                                    .build())
-                            .build())
-                    .user(existingUser)
-                    .quantity(cartItem.getQuantity())
-                    .createdAt(cartItem.getCreatedAt())
-                    .updatedAt(cartItem.getUpdatedAt())
-                    .build());
-        });
+        existingUser
+                .getCartItems()
+                .stream()
+                .sorted(Comparator.comparing(CartItem::getCreatedAt).reversed()).toList()
+                .forEach(cartItem -> listOfCartItemDto.add(CartItemDto
+                        .builder()
+                        .id(cartItem.getId())
+                        .product(ProductDto
+                                .builder()
+                                .name(cartItem.getProduct().getName())
+                                .actualPrice(cartItem.getProduct().getActualPrice())
+                                .discountedPrice(cartItem.getProduct().getDiscountedPrice())
+                                .description(cartItem.getProduct().getDescription())
+                                .images(cartItem.getProduct().getImages())
+                                .productId(cartItem.getProduct().getId())
+                                .category(CategoryDto
+                                        .builder()
+                                        .id(cartItem.getProduct().getCategory().getId())
+                                        .categoryName(cartItem.getProduct().getCategory().getCategoryName())
+                                        .build())
+                                .subCategory(SubCategoryDto
+                                        .builder()
+                                        .id(cartItem.getProduct().getSubCategory().getId())
+                                        .subCategoryName(cartItem.getProduct().getSubCategory().getSubCategoryName())
+                                        .build())
+                                .build())
+                        .user(existingUser)
+                        .quantity(cartItem.getQuantity())
+                        .createdAt(cartItem.getCreatedAt())
+                        .updatedAt(cartItem.getUpdatedAt())
+                        .build()));
 
         return CommonResponseDto
                 .builder()
                 .message("Cart fetched successfully")
-                .data(Map.of("results", listOfCartItemDtos))
+                .data(Map.of("results", listOfCartItemDto))
                 .success(true)
                 .build();
 
@@ -130,20 +129,18 @@ public class CartItemServiceImpl implements CartItemService {
 
         List<CartItem> listOfCartItems = existingUser.getCartItems();
 
-        ColorLogger.logInfo("Before listOfCartItems :: " + (long) listOfCartItems.size());
-
         Optional<CartItem> filteredCartItem = existingUser.getCartItems().stream().filter(cartItem -> {
-            if (cartItem.getId().equals(cartItemId)) {
+            boolean isPresent = cartItem.getId().equals(cartItemId);
+            if (isPresent) {
                 listOfCartItems.remove(cartItem);
             }
-            return cartItem.getId().equals(cartItemId);
+            return isPresent;
         }).findFirst();
-
-        ColorLogger.logInfo("After listOfCartItems :: " + (long) listOfCartItems.size());
 
         if (filteredCartItem.isPresent()) {
             existingUser.setCartItems(listOfCartItems);
             cartItemRepo.delete(filteredCartItem.get());
+            userRepo.save(existingUser);
 
             return CommonResponseDto
                     .builder()
@@ -152,7 +149,7 @@ public class CartItemServiceImpl implements CartItemService {
                     .success(true)
                     .build();
         } else {
-            throw new ApplicationException("404", "Delete of cart item id doesnot present inside user cart", HttpStatus.NOT_FOUND);
+            throw new ApplicationException("404", "Delete of cart item id doesn't present inside user cart", HttpStatus.NOT_FOUND);
         }
     }
 

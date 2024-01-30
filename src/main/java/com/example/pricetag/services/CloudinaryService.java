@@ -9,6 +9,6 @@ public interface CloudinaryService {
     String uploadFile(MultipartFile file, String folderName);
 
 
-    Map delete(String id);
+    Map delete(String id, String folderName);
 
 }

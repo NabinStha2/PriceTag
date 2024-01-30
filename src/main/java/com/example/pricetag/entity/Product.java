@@ -32,17 +32,16 @@ public class Product {
     @Column(name = "description", nullable = false, columnDefinition = "longtext")
     private String description;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @JsonManagedReference
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "subcategory_id", nullable = false)
     private SubCategory subCategory;
 
-    @OneToMany
-    @JoinColumn(name = "images")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Image> images;
 
     @Column(name = "actual_price", nullable = false)
@@ -52,10 +51,10 @@ public class Product {
     private Double discountedPrice;
 
     @Column(name = "quantity")
-    private Long quantity;
+    private Long quantity = 0L;
 
     @Column(name = "is_InStock")
-    private Boolean isInStock;
+    private Boolean isInStock = false;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")

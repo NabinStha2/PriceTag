@@ -10,16 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterUserDto {
-  private String email;
-  private String password;
-  private String fullName;
+    private String email;
+    private String password;
+    private String fullName;
+    private Long phoneNumber;
 
-  @Override
-  public String toString() {
-    return "RegisterUserDto{" +
-        "email='" + email + '\'' +
-        ", password='" + password + '\'' +
-        ", fullName='" + fullName + '\'' +
-        '}';
-  }
+
 }

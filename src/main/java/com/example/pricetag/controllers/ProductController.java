@@ -71,8 +71,8 @@ public class ProductController {
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<CommonResponseDto> deleteProductById(@PathVariable(name = "productId") Long productId) throws ApplicationException {
-        System.out.println(productId);
+    public ResponseEntity<CommonResponseDto> deleteProductById(@PathVariable(name = "productId") Long productId)
+            throws ApplicationException {
         return ResponseEntity.ok(productService.deleteProductById(productId));
     }
 

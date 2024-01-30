@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -21,5 +22,7 @@ public class ProductDto {
     private Double actualPrice;
     private Double discountedPrice;
     private List<Image> images;
+    private Date createdAt;
+    private Date updatedAt;
 
 }

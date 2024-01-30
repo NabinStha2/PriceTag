@@ -12,11 +12,13 @@ import com.example.pricetag.repository.CategoryRepo;
 import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.SubCategoryRepo;
 import com.example.pricetag.responses.CommonResponseDto;
+import com.example.pricetag.services.CloudinaryService;
 import com.example.pricetag.services.ProductService;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +36,8 @@ public class ProductServiceImpl implements ProductService {
     private CategoryRepo categoryRepo;
     @Autowired
     private SubCategoryRepo subCategoryRepo;
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     private static Product createNewProduct(ProductDto productDto, SubCategory filteredSubCategory, Category category) {
         Product newProduct = new Product();
@@ -96,7 +100,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public CommonResponseDto getAllProducts(PaginationDto paginationDto) {
         try {
-            Pageable pageable = PageRequest.of(paginationDto.getPage() - 1, paginationDto.getLimit());
+            if (paginationDto.getSortBy() == null) {
+                paginationDto.setSortBy("createdAt");
+            }
+            if (paginationDto.getOrder() == null) {
+                paginationDto.setOrder("desc");
+            }
+            Pageable pageable = PageRequest.of(paginationDto.getPage() - 1, paginationDto.getLimit(),
+//                    Objects.equals(paginationDto.getOrder(), "asc")
+                    paginationDto.getOrder().equals("asc") ? Sort.by(paginationDto.getSortBy()).ascending() : Sort.by(paginationDto.getSortBy()).descending());
             List<Product> products = productRepo.findAll(pageable).getContent();
 
             int productCount = productRepo.findAll().size();
@@ -112,13 +124,19 @@ public class ProductServiceImpl implements ProductService {
                             .builder()
                             .id(product.getCategory().getId())
                             .categoryName(product.getCategory().getCategoryName())
+                            .createdAt(product.getCategory().getCreatedAt())
+                            .updatedAt(product.getCategory().getUpdatedAt())
                             .build())
                     .subCategory(SubCategoryDto
                             .builder()
                             .id(product.getSubCategory().getId())
                             .subCategoryName(product.getSubCategory().getSubCategoryName())
+                            .createdAt(product.getSubCategory().getCreatedAt())
+                            .updatedAt(product.getSubCategory().getUpdatedAt())
                             .build())
                     .images(product.getImages())
+                    .createdAt(product.getCreatedAt())
+                    .updatedAt(product.getUpdatedAt())
                     .build()));
 
             return CommonResponseDto.builder()
@@ -154,8 +172,7 @@ public class ProductServiceImpl implements ProductService {
 
             int productCount = productRepo.findAllBySubCategoryId(subCategoryDto.getId(), null).size();
 
-            product.forEach(d -> ColorLogger.logInfo("product :: " + d.getId()));
-
+//            product.forEach(d -> ColorLogger.logInfo("product :: " + d.getId()));
 
             return CommonResponseDto
                     .builder()
@@ -180,10 +197,13 @@ public class ProductServiceImpl implements ProductService {
         Optional<Product> productOptional = productRepo.findById(productId);
         if (productOptional.isPresent()) {
             Product product = productOptional.get();
+            product.getImages().forEach(image -> cloudinaryService.delete(image.getPublicId(),
+                    "pricetag/" + product.getCategory().getCategoryName()
+                            + "/"
+                            + product.getSubCategory().getSubCategoryName()));
             productRepo.delete(product);
 
             return CommonResponseDto.builder()
-                    .data(product)
                     .message("Product has been deleted successfully")
                     .success(true)
                     .build();
