@@ -20,6 +20,8 @@ public class ProductDto {
     private String name;
     private String description;
     private Double actualPrice;
+    private Long quantity = 0L;
+    private Boolean isInStock = false;
     private Double discountedPrice;
     private List<Image> images;
     private Date createdAt;

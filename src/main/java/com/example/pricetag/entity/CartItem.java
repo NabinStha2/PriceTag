@@ -31,6 +31,12 @@ public class CartItem {
     @Column(name = "quantity")
     private Long quantity;
 
+    @Column(name = "checkout_amt")
+    private Double checkoutAmt;
+
+    @ManyToOne
+    private Order order;
+
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private Date createdAt;
@@ -38,6 +44,5 @@ public class CartItem {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Date updatedAt;
-
 
 }

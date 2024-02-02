@@ -17,14 +17,15 @@ public class Order extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @OneToMany
-    @JoinColumn(name = "cartItem_id")
-    private List<CartItem> cartItems;
 
+    @OneToMany(mappedBy = "order")
+    private List<CartItem> cartItems;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Column(name = "total_amt")
+    private Double totalAmt;
 
 }

@@ -9,12 +9,11 @@ import com.example.pricetag.repository.CartItemRepo;
 import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.UserRepo;
 import com.example.pricetag.responses.CommonResponseDto;
+import com.example.pricetag.services.AuthService;
 import com.example.pricetag.services.CartItemService;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -30,10 +29,12 @@ public class CartItemServiceImpl implements CartItemService {
 
     @Autowired
     private ProductRepo productRepo;
+    @Autowired
+    private AuthService authService;
 
     @Override
     public CommonResponseDto getCart() {
-        User existingUser = getUser();
+        User existingUser = authService.getUser();
 
         List<CartItemDto> listOfCartItemDto = new ArrayList<>();
 
@@ -41,33 +42,42 @@ public class CartItemServiceImpl implements CartItemService {
                 .getCartItems()
                 .stream()
                 .sorted(Comparator.comparing(CartItem::getCreatedAt).reversed()).toList()
-                .forEach(cartItem -> listOfCartItemDto.add(CartItemDto
-                        .builder()
-                        .id(cartItem.getId())
-                        .product(ProductDto
+                .forEach(cartItem -> {
+                    if (cartItem.getCheckoutAmt() == null) {
+                        listOfCartItemDto.add(CartItemDto
                                 .builder()
-                                .name(cartItem.getProduct().getName())
-                                .actualPrice(cartItem.getProduct().getActualPrice())
-                                .discountedPrice(cartItem.getProduct().getDiscountedPrice())
-                                .description(cartItem.getProduct().getDescription())
-                                .images(cartItem.getProduct().getImages())
-                                .productId(cartItem.getProduct().getId())
-                                .category(CategoryDto
+                                .id(cartItem.getId())
+                                .product(ProductDto
                                         .builder()
-                                        .id(cartItem.getProduct().getCategory().getId())
-                                        .categoryName(cartItem.getProduct().getCategory().getCategoryName())
+                                        .name(cartItem.getProduct().getName())
+                                        .actualPrice(cartItem.getProduct().getActualPrice())
+                                        .discountedPrice(cartItem.getProduct().getDiscountedPrice())
+                                        .description(cartItem.getProduct().getDescription())
+                                        .images(cartItem.getProduct().getImages())
+                                        .productId(cartItem.getProduct().getId())
+                                        .quantity(cartItem.getProduct().getQuantity())
+                                        .isInStock(cartItem.getProduct().getIsInStock())
+                                        .createdAt(cartItem.getProduct().getCreatedAt())
+                                        .updatedAt(cartItem.getProduct().getUpdatedAt())
+                                        .category(CategoryDto
+                                                .builder()
+                                                .id(cartItem.getProduct().getCategory().getId())
+                                                .categoryName(cartItem.getProduct().getCategory().getCategoryName())
+                                                .build())
+                                        .subCategory(SubCategoryDto
+                                                .builder()
+                                                .id(cartItem.getProduct().getSubCategory().getId())
+                                                .subCategoryName(cartItem.getProduct().getSubCategory().getSubCategoryName())
+                                                .build())
                                         .build())
-                                .subCategory(SubCategoryDto
-                                        .builder()
-                                        .id(cartItem.getProduct().getSubCategory().getId())
-                                        .subCategoryName(cartItem.getProduct().getSubCategory().getSubCategoryName())
-                                        .build())
-                                .build())
-                        .user(existingUser)
-                        .quantity(cartItem.getQuantity())
-                        .createdAt(cartItem.getCreatedAt())
-                        .updatedAt(cartItem.getUpdatedAt())
-                        .build()));
+                                .user(existingUser)
+                                .quantity(cartItem.getQuantity())
+                                .createdAt(cartItem.getCreatedAt())
+                                .updatedAt(cartItem.getUpdatedAt())
+                                .checkoutAmt(cartItem.getCheckoutAmt())
+                                .build());
+                    }
+                });
 
         return CommonResponseDto
                 .builder()
@@ -80,15 +90,20 @@ public class CartItemServiceImpl implements CartItemService {
 
     @Override
     public CommonResponseDto createCart(AddCartItemDto addCartItemDto) {
-        User existingUser = getUser();
+        User existingUser = authService.getUser();
         ColorLogger.logInfo("I am inside getCart :: " + existingUser);
 
         Optional<Product> existingProduct = productRepo.findById(addCartItemDto.getProductId());
         if (existingProduct.isPresent()) {
+            if (existingProduct.get().getQuantity() < addCartItemDto.getQuantity()) {
+                throw new ApplicationException("400", "Product quantity not available", HttpStatus.BAD_REQUEST);
+            }
             List<CartItem> listOfCartItem = existingUser.getCartItems();
 
             Optional<CartItem> filteredCartItem = listOfCartItem.stream().filter((cartItem) -> {
-                return cartItem.getProduct().getId().equals(existingProduct.get().getId());
+                if (cartItem.getProduct().getId().equals(existingProduct.get().getId()))
+                    return cartItem.getCheckoutAmt() == null;
+                return false;
             }).findFirst();
 
             if (filteredCartItem.isPresent()) {
@@ -125,7 +140,7 @@ public class CartItemServiceImpl implements CartItemService {
     }
 
     public CommonResponseDto deleteCartItem(Long cartItemId) {
-        User existingUser = getUser();
+        User existingUser = authService.getUser();
 
         List<CartItem> listOfCartItems = existingUser.getCartItems();
 
@@ -151,17 +166,6 @@ public class CartItemServiceImpl implements CartItemService {
         } else {
             throw new ApplicationException("404", "Delete of cart item id doesn't present inside user cart", HttpStatus.NOT_FOUND);
         }
-    }
-
-    private User getUser() {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal();
-        ColorLogger.logInfo("I am inside getCart :: " + userDetails.getUsername());
-        User existingUser = userRepo.findByEmail(userDetails.getUsername()).orElse(null);
-        if (existingUser == null) {
-            throw new ApplicationException("404", "User not found", HttpStatus.NOT_FOUND);
-        }
-        return existingUser;
     }
 
 

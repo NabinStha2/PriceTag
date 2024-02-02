@@ -51,6 +51,10 @@ public class ProductServiceImpl implements ProductService {
         newProduct.setDescription(productDto.getDescription());
         newProduct.setActualPrice(productDto.getActualPrice());
         newProduct.setDiscountedPrice(productDto.getDiscountedPrice());
+        if (productDto.getQuantity() > 0) {
+            newProduct.setQuantity(productDto.getQuantity());
+            newProduct.setIsInStock(true);
+        }
         return newProduct;
     }
 
@@ -88,6 +92,11 @@ public class ProductServiceImpl implements ProductService {
                                                 .id(newProduct.getSubCategory().getId())
                                                 .subCategoryName(newProduct.getSubCategory().getSubCategoryName())
                                                 .build())
+                                        .quantity(newProduct.getQuantity())
+                                        .images(newProduct.getImages())
+                                        .isInStock(newProduct.getIsInStock())
+                                        .createdAt(newProduct.getCreatedAt())
+                                        .updatedAt(newProduct.getUpdatedAt())
                                         .build()))
                         .message("Product has been created successfully")
                         .success(true)
@@ -139,8 +148,10 @@ public class ProductServiceImpl implements ProductService {
                             .updatedAt(product.getSubCategory().getUpdatedAt())
                             .build())
                     .images(product.getImages())
+                    .quantity(product.getQuantity())
                     .createdAt(product.getCreatedAt())
                     .updatedAt(product.getUpdatedAt())
+                    .isInStock(product.getIsInStock())
                     .build()));
 
             return CommonResponseDto.builder()

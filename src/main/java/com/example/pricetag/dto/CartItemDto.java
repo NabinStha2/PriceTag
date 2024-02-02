@@ -22,6 +22,8 @@ public class CartItemDto {
 
     private Long quantity;
 
+    private Double checkoutAmt;
+
     private Date createdAt;
 
     private Date updatedAt;

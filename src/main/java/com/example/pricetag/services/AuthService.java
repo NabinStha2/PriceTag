@@ -19,6 +19,7 @@ import com.example.pricetag.utils.OtpGeneratorUtil;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -272,5 +273,16 @@ public class AuthService implements UserDetailsService {
         } else {
             throw new ApplicationException("400", "Email already registered", HttpStatus.BAD_REQUEST);
         }
+    }
+
+    public User getUser() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
+                .getPrincipal();
+        ColorLogger.logInfo("I am inside getCart :: " + userDetails.getUsername());
+        User existingUser = userRepo.findByEmail(userDetails.getUsername()).orElse(null);
+        if (existingUser == null) {
+            throw new ApplicationException("404", "User not found", HttpStatus.NOT_FOUND);
+        }
+        return existingUser;
     }
 }
