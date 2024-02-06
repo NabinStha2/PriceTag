@@ -3,10 +3,7 @@ package com.example.pricetag.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,8 +11,9 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Data
 @Builder
+@Getter
+@Setter
 @Table(name = "product")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -44,17 +42,16 @@ public class Product {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Image> images;
 
-    @Column(name = "actual_price", nullable = false)
-    private Double actualPrice;
-
-    @Column(name = "discounted_price")
-    private Double discountedPrice;
 
     @Column(name = "quantity")
     private Long quantity = 0L;
 
     @Column(name = "is_InStock")
     private Boolean isInStock = false;
+
+    @OneToOne
+    @JoinColumn(name = "variants_id")
+    private Variants variants;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
