@@ -46,10 +46,10 @@ public class OrderServiceImpl implements OrderService {
         if (!filteredCartItemList.isEmpty()) {
             List<CartItem> updatedCartItemList = new ArrayList<>();
             for (CartItem cartItem : filteredCartItemList) {
-                if (cartItem.getProduct().getQuantity() < cartItem.getQuantity()) {
-                    throw new ApplicationException("500", "Product quantity not available", HttpStatus.BAD_REQUEST);
-                }
-                cartItem.setCheckoutAmt(cartItem.getProduct().getDiscountedPrice() * cartItem.getQuantity());
+//                if (cartItem.getProduct().getQuantity() < cartItem.getQuantity()) {
+//                    throw new ApplicationException("500", "Product quantity not available", HttpStatus.BAD_REQUEST);
+//                }
+//                cartItem.setCheckoutAmt(cartItem.getProduct().getDiscountedPrice() * cartItem.getQuantity());
                 updatedCartItemList.add(cartItem);
             }
             try {
@@ -64,10 +64,7 @@ public class OrderServiceImpl implements OrderService {
 
                 for (CartItem cartItem : updatedCartItemList) {
                     Product product = cartItem.getProduct();
-                    product.setQuantity(product.getQuantity() - cartItem.getQuantity());
-                    if (product.getQuantity() == 0) {
-                        product.setIsInStock(false);
-                    }
+//                    product.setQuantity(product.getQuantity() - cartItem.getQuantity());
                     productRepo.save(product);
                 }
             } catch (DataAccessException e) {

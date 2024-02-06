@@ -42,16 +42,9 @@ public class Product {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Image> images;
 
-
-    @Column(name = "quantity")
-    private Long quantity = 0L;
-
-    @Column(name = "is_InStock")
-    private Boolean isInStock = false;
-
-    @OneToOne
-    @JoinColumn(name = "variants_id")
-    private Variants variants;
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "products_id")
+    private List<Variants> variants;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")

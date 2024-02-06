@@ -4,10 +4,7 @@ import com.example.pricetag.dto.CategoryDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.ProductDto;
 import com.example.pricetag.dto.SubCategoryDto;
-import com.example.pricetag.entity.CartItem;
-import com.example.pricetag.entity.Category;
-import com.example.pricetag.entity.Product;
-import com.example.pricetag.entity.SubCategory;
+import com.example.pricetag.entity.*;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.CartItemRepo;
 import com.example.pricetag.repository.CategoryRepo;
@@ -49,12 +46,8 @@ public class ProductServiceImpl implements ProductService {
         newProduct.setSubCategory(filteredSubCategory);
         newProduct.setName(productDto.getName());
         newProduct.setDescription(productDto.getDescription());
-        newProduct.setActualPrice(productDto.getActualPrice());
-        newProduct.setDiscountedPrice(productDto.getDiscountedPrice());
-        if (productDto.getQuantity() > 0) {
-            newProduct.setQuantity(productDto.getQuantity());
-            newProduct.setIsInStock(true);
-        }
+        newProduct.setVariants(productDto.getVariants());
+
         return newProduct;
     }
 
@@ -78,8 +71,7 @@ public class ProductServiceImpl implements ProductService {
                                 ProductDto
                                         .builder()
                                         .productId(newProduct.getId())
-                                        .actualPrice(newProduct.getActualPrice())
-                                        .discountedPrice(newProduct.getDiscountedPrice())
+                                        .variants(newProduct.getVariants())
                                         .description(newProduct.getDescription())
                                         .name(newProduct.getName())
                                         .category(CategoryDto
@@ -92,9 +84,7 @@ public class ProductServiceImpl implements ProductService {
                                                 .id(newProduct.getSubCategory().getId())
                                                 .subCategoryName(newProduct.getSubCategory().getSubCategoryName())
                                                 .build())
-                                        .quantity(newProduct.getQuantity())
                                         .images(newProduct.getImages())
-                                        .isInStock(newProduct.getIsInStock())
                                         .createdAt(newProduct.getCreatedAt())
                                         .updatedAt(newProduct.getUpdatedAt())
                                         .build()))
@@ -127,32 +117,35 @@ public class ProductServiceImpl implements ProductService {
             int productCount = productRepo.findAll().size();
 
             List<ProductDto> productDtoList = new ArrayList<>();
-            products.forEach(product -> productDtoList.add(ProductDto.builder()
-                    .productId(product.getId())
-                    .name(product.getName())
-                    .description(product.getDescription())
-                    .actualPrice(product.getActualPrice())
-                    .discountedPrice(product.getDiscountedPrice())
-                    .category(CategoryDto
-                            .builder()
-                            .id(product.getCategory().getId())
-                            .categoryName(product.getCategory().getCategoryName())
-                            .createdAt(product.getCategory().getCreatedAt())
-                            .updatedAt(product.getCategory().getUpdatedAt())
-                            .build())
-                    .subCategory(SubCategoryDto
-                            .builder()
-                            .id(product.getSubCategory().getId())
-                            .subCategoryName(product.getSubCategory().getSubCategoryName())
-                            .createdAt(product.getSubCategory().getCreatedAt())
-                            .updatedAt(product.getSubCategory().getUpdatedAt())
-                            .build())
-                    .images(product.getImages())
-                    .quantity(product.getQuantity())
-                    .createdAt(product.getCreatedAt())
-                    .updatedAt(product.getUpdatedAt())
-                    .isInStock(product.getIsInStock())
-                    .build()));
+            List<Variants> listVariants = new ArrayList<>();
+            products.forEach(product -> {
+                listVariants.addAll(product.getVariants());
+                productDtoList.add(ProductDto.builder()
+                        .productId(product.getId())
+                        .name(product.getName())
+                        .description(product.getDescription())
+                        .category(CategoryDto
+                                .builder()
+                                .id(product.getCategory().getId())
+                                .categoryName(product.getCategory().getCategoryName())
+                                .createdAt(product.getCategory().getCreatedAt())
+                                .updatedAt(product.getCategory().getUpdatedAt())
+                                .build())
+                        .subCategory(SubCategoryDto
+                                .builder()
+                                .id(product.getSubCategory().getId())
+                                .subCategoryName(product.getSubCategory().getSubCategoryName())
+                                .createdAt(product.getSubCategory().getCreatedAt())
+                                .updatedAt(product.getSubCategory().getUpdatedAt())
+                                .build())
+                        .images(product.getImages())
+                        .createdAt(product.getCreatedAt())
+                        .updatedAt(product.getUpdatedAt())
+                        .variants(product.getVariants())
+                        .build());
+            });
+
+            ColorLogger.logError(listVariants.toString());
 
             return CommonResponseDto.builder()
                     .data(Map.of("results", productDtoList,

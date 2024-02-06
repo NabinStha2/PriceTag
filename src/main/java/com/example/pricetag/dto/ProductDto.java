@@ -1,15 +1,14 @@
 package com.example.pricetag.dto;
 
 import com.example.pricetag.entity.Image;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.example.pricetag.entity.Variants;
+import lombok.*;
 
 import java.util.Date;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,11 +18,8 @@ public class ProductDto {
     private SubCategoryDto subCategory;
     private String name;
     private String description;
-    private Double actualPrice;
-    private Long quantity = 0L;
-    private Boolean isInStock = false;
-    private Double discountedPrice;
     private List<Image> images;
+    private List<Variants> variants;
     private Date createdAt;
     private Date updatedAt;
 

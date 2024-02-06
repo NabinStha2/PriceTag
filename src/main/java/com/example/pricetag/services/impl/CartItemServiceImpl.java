@@ -4,10 +4,12 @@ import com.example.pricetag.dto.*;
 import com.example.pricetag.entity.CartItem;
 import com.example.pricetag.entity.Product;
 import com.example.pricetag.entity.User;
+import com.example.pricetag.entity.Variants;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.CartItemRepo;
 import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.UserRepo;
+import com.example.pricetag.repository.VariantRepo;
 import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.AuthService;
 import com.example.pricetag.services.CartItemService;
@@ -31,6 +33,8 @@ public class CartItemServiceImpl implements CartItemService {
     private ProductRepo productRepo;
     @Autowired
     private AuthService authService;
+    @Autowired
+    private VariantRepo variantRepo;
 
     @Override
     public CommonResponseDto getCart() {
@@ -50,13 +54,9 @@ public class CartItemServiceImpl implements CartItemService {
                                 .product(ProductDto
                                         .builder()
                                         .name(cartItem.getProduct().getName())
-                                        .actualPrice(cartItem.getProduct().getActualPrice())
-                                        .discountedPrice(cartItem.getProduct().getDiscountedPrice())
                                         .description(cartItem.getProduct().getDescription())
                                         .images(cartItem.getProduct().getImages())
                                         .productId(cartItem.getProduct().getId())
-                                        .quantity(cartItem.getProduct().getQuantity())
-                                        .isInStock(cartItem.getProduct().getIsInStock())
                                         .createdAt(cartItem.getProduct().getCreatedAt())
                                         .updatedAt(cartItem.getProduct().getUpdatedAt())
                                         .category(CategoryDto
@@ -75,6 +75,7 @@ public class CartItemServiceImpl implements CartItemService {
                                 .createdAt(cartItem.getCreatedAt())
                                 .updatedAt(cartItem.getUpdatedAt())
                                 .checkoutAmt(cartItem.getCheckoutAmt())
+                                .variants(cartItem.getVariants())
                                 .build());
                     }
                 });
@@ -95,14 +96,31 @@ public class CartItemServiceImpl implements CartItemService {
 
         Optional<Product> existingProduct = productRepo.findById(addCartItemDto.getProductId());
         if (existingProduct.isPresent()) {
-            if (existingProduct.get().getQuantity() < addCartItemDto.getQuantity()) {
+            Optional<Variants> variantPresent = Optional.empty();
+            for (Variants variant : existingProduct.get().getVariants()) {
+                if (variant.getId().equals(addCartItemDto.getVariantId())) {
+                    variantPresent = Optional.of(variant);
+                    break;
+                }
+            }
+            if (variantPresent.isEmpty()) {
+                throw new ApplicationException("404", "Variant not found inside given product id", HttpStatus.NOT_FOUND);
+            }
+
+            Optional<Variants> existingVariant = variantRepo.findById(addCartItemDto.getVariantId());
+            if (existingVariant.isEmpty()) {
+                throw new ApplicationException("404", "Variant not found", HttpStatus.NOT_FOUND);
+            }
+
+            if (addCartItemDto.getQuantity() > existingVariant.get().getQuantity()) {
                 throw new ApplicationException("400", "Product quantity not available", HttpStatus.BAD_REQUEST);
             }
+
             List<CartItem> listOfCartItem = existingUser.getCartItems();
 
             Optional<CartItem> filteredCartItem = listOfCartItem.stream().filter((cartItem) -> {
                 if (cartItem.getProduct().getId().equals(existingProduct.get().getId()))
-                    return cartItem.getCheckoutAmt() == null;
+                    return cartItem.getCheckoutAmt() == null && cartItem.getVariants().getId().equals(existingVariant.get().getId());
                 return false;
             }).findFirst();
 
@@ -122,6 +140,7 @@ public class CartItemServiceImpl implements CartItemService {
                         .user(existingUser)
                         .product(existingProduct.get())
                         .quantity(addCartItemDto.getQuantity())
+                        .variants(existingVariant.get())
                         .build();
                 CartItem savedCartItem = cartItemRepo.save(newCartItem);
                 existingUser.getCartItems().add(savedCartItem);

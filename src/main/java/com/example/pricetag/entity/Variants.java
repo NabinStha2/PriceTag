@@ -3,6 +3,9 @@ package com.example.pricetag.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -16,14 +19,14 @@ public class Variants {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "size")
-    private String size;
+    @ElementCollection
+    private List<String> size = new ArrayList<>();
 
     @Column(name = "color")
     private String color;
 
     @Column(name = "quantity")
-    private int quantity;
+    private Long quantity = 0L;
 
     @Column(name = "actual_price", nullable = false)
     private Double actualPrice;

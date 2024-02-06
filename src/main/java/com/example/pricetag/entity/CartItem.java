@@ -34,6 +34,10 @@ public class CartItem {
     @Column(name = "checkout_amt")
     private Double checkoutAmt;
 
+    @OneToOne
+    @JoinColumn(name = "variants_id")
+    private Variants variants;
+
     @ManyToOne
     private Order order;
 

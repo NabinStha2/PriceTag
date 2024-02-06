@@ -1,6 +1,7 @@
 package com.example.pricetag.dto;
 
 import com.example.pricetag.entity.User;
+import com.example.pricetag.entity.Variants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,6 +24,8 @@ public class CartItemDto {
     private Long quantity;
 
     private Double checkoutAmt;
+
+    private Variants variants;
 
     private Date createdAt;
 
