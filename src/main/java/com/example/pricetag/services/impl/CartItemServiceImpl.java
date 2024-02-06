@@ -36,6 +36,38 @@ public class CartItemServiceImpl implements CartItemService {
     @Autowired
     private VariantRepo variantRepo;
 
+    private static CartItemDto buildCartItemDto(CartItem newCartItem, User existingUser) {
+        return CartItemDto
+                .builder()
+                .id(newCartItem.getId())
+                .product(ProductDto
+                        .builder()
+                        .name(newCartItem.getProduct().getName())
+                        .description(newCartItem.getProduct().getDescription())
+                        .images(newCartItem.getProduct().getImages())
+                        .productId(newCartItem.getProduct().getId())
+                        .createdAt(newCartItem.getProduct().getCreatedAt())
+                        .updatedAt(newCartItem.getProduct().getUpdatedAt())
+                        .category(CategoryDto
+                                .builder()
+                                .id(newCartItem.getProduct().getCategory().getId())
+                                .categoryName(newCartItem.getProduct().getCategory().getCategoryName())
+                                .build())
+                        .subCategory(SubCategoryDto
+                                .builder()
+                                .id(newCartItem.getProduct().getSubCategory().getId())
+                                .subCategoryName(newCartItem.getProduct().getSubCategory().getSubCategoryName())
+                                .build())
+                        .build())
+                .user(existingUser)
+                .quantity(newCartItem.getQuantity())
+                .createdAt(newCartItem.getCreatedAt())
+                .updatedAt(newCartItem.getUpdatedAt())
+                .checkoutAmt(newCartItem.getCheckoutAmt())
+                .variants(newCartItem.getVariants())
+                .build();
+    }
+
     @Override
     public CommonResponseDto getCart() {
         User existingUser = authService.getUser();
@@ -48,35 +80,7 @@ public class CartItemServiceImpl implements CartItemService {
                 .sorted(Comparator.comparing(CartItem::getCreatedAt).reversed()).toList()
                 .forEach(cartItem -> {
                     if (cartItem.getCheckoutAmt() == null) {
-                        listOfCartItemDto.add(CartItemDto
-                                .builder()
-                                .id(cartItem.getId())
-                                .product(ProductDto
-                                        .builder()
-                                        .name(cartItem.getProduct().getName())
-                                        .description(cartItem.getProduct().getDescription())
-                                        .images(cartItem.getProduct().getImages())
-                                        .productId(cartItem.getProduct().getId())
-                                        .createdAt(cartItem.getProduct().getCreatedAt())
-                                        .updatedAt(cartItem.getProduct().getUpdatedAt())
-                                        .category(CategoryDto
-                                                .builder()
-                                                .id(cartItem.getProduct().getCategory().getId())
-                                                .categoryName(cartItem.getProduct().getCategory().getCategoryName())
-                                                .build())
-                                        .subCategory(SubCategoryDto
-                                                .builder()
-                                                .id(cartItem.getProduct().getSubCategory().getId())
-                                                .subCategoryName(cartItem.getProduct().getSubCategory().getSubCategoryName())
-                                                .build())
-                                        .build())
-                                .user(existingUser)
-                                .quantity(cartItem.getQuantity())
-                                .createdAt(cartItem.getCreatedAt())
-                                .updatedAt(cartItem.getUpdatedAt())
-                                .checkoutAmt(cartItem.getCheckoutAmt())
-                                .variants(cartItem.getVariants())
-                                .build());
+                        listOfCartItemDto.add(buildCartItemDto(cartItem, existingUser));
                     }
                 });
 
@@ -89,52 +93,60 @@ public class CartItemServiceImpl implements CartItemService {
 
     }
 
+  
     @Override
     public CommonResponseDto createCart(AddCartItemDto addCartItemDto) {
+        // Get the current user
         User existingUser = authService.getUser();
+
+        // Log user information
         ColorLogger.logInfo("I am inside getCart :: " + existingUser);
 
+        // Check if the product exists
         Optional<Product> existingProduct = productRepo.findById(addCartItemDto.getProductId());
         if (existingProduct.isPresent()) {
-            Optional<Variants> variantPresent = Optional.empty();
-            for (Variants variant : existingProduct.get().getVariants()) {
-                if (variant.getId().equals(addCartItemDto.getVariantId())) {
-                    variantPresent = Optional.of(variant);
-                    break;
-                }
-            }
+            // Check if the variant exists within the product
+            Optional<Variants> variantPresent = existingProduct.get().getVariants().stream()
+                    .filter(variant -> variant.getId().equals(addCartItemDto.getVariantId()))
+                    .findFirst();
             if (variantPresent.isEmpty()) {
                 throw new ApplicationException("404", "Variant not found inside given product id", HttpStatus.NOT_FOUND);
             }
 
+            // Check if the variant exists
             Optional<Variants> existingVariant = variantRepo.findById(addCartItemDto.getVariantId());
             if (existingVariant.isEmpty()) {
                 throw new ApplicationException("404", "Variant not found", HttpStatus.NOT_FOUND);
             }
 
+            // Check if the requested quantity is available
             if (addCartItemDto.getQuantity() > existingVariant.get().getQuantity()) {
                 throw new ApplicationException("400", "Product quantity not available", HttpStatus.BAD_REQUEST);
             }
 
+            // Get the list of existing cart items for the user
             List<CartItem> listOfCartItem = existingUser.getCartItems();
 
-            Optional<CartItem> filteredCartItem = listOfCartItem.stream().filter((cartItem) -> {
-                if (cartItem.getProduct().getId().equals(existingProduct.get().getId()))
-                    return cartItem.getCheckoutAmt() == null && cartItem.getVariants().getId().equals(existingVariant.get().getId());
-                return false;
-            }).findFirst();
+            // Check if the cart item already exists
+            Optional<CartItem> filteredCartItem = listOfCartItem.stream()
+                    .filter(cartItem -> cartItem.getProduct().getId().equals(existingProduct.get().getId())
+                            && cartItem.getCheckoutAmt() == null
+                            && cartItem.getVariants().getId().equals(existingVariant.get().getId()))
+                    .findFirst();
 
             if (filteredCartItem.isPresent()) {
+                // Update existing cart item quantity
                 CartItem existingCartItem = filteredCartItem.get();
                 existingCartItem.setQuantity(addCartItemDto.getQuantity());
                 cartItemRepo.save(existingCartItem);
                 return CommonResponseDto
                         .builder()
                         .message("Product added to cart successfully")
-                        .data(Map.of("results", existingCartItem))
+                        .data(Map.of("results", buildCartItemDto(existingCartItem, existingUser)))
                         .success(true)
                         .build();
             } else {
+                // Create a new cart item
                 CartItem newCartItem = CartItem
                         .builder()
                         .user(existingUser)
@@ -143,17 +155,22 @@ public class CartItemServiceImpl implements CartItemService {
                         .variants(existingVariant.get())
                         .build();
                 CartItem savedCartItem = cartItemRepo.save(newCartItem);
+
+                // Update user cart items and save user
                 existingUser.getCartItems().add(savedCartItem);
                 userRepo.save(existingUser);
+
+                // Return success response
                 return CommonResponseDto
                         .builder()
                         .message("Product created to cart successfully")
-                        .data(Map.of("results", newCartItem))
+                        .data(Map.of("results", buildCartItemDto(newCartItem, existingUser)))
                         .success(true)
                         .build();
             }
 
         } else {
+            // Product not found
             throw new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND);
         }
     }

@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,7 +29,6 @@ public class ImageServiceImpl implements ImageService {
     private CloudinaryService cloudinaryService;
     @Autowired
     private ImageRepo imageRepo;
-
     @Autowired
     private ProductRepo productRepo;
 
@@ -38,21 +36,20 @@ public class ImageServiceImpl implements ImageService {
     public ResponseEntity<CommonResponseDto> uploadImage(ImageDto imageDto) {
 
         ColorLogger.logError(imageDto.toString());
-        if (imageDto.getProductId() == null) {
+        if (imageDto.getProductId() == null || imageDto.getFile() == null) {
             return ResponseEntity.badRequest().build();
         }
-        if (imageDto.getFile() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        Optional<Product> existingProduct = productRepo.findById(imageDto.getProductId());
-        if (existingProduct.isEmpty()) {
-            throw new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND);
-        }
-
-        String categoryName = existingProduct.get().getCategory().getCategoryName();
-        String subCategoryName = existingProduct.get().getSubCategory().getSubCategoryName();
+        Product existingProduct = productRepo.findById(imageDto.getProductId())
+                .orElseThrow(() -> new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND));
+        String categoryName = existingProduct.getCategory().getCategoryName();
+        String subCategoryName = existingProduct.getSubCategory().getSubCategoryName();
 
         List<Image> imageList = new ArrayList<>();
+
+        existingProduct.getImages().forEach(image -> cloudinaryService.delete(image.getPublicId(),
+                "pricetag/" + categoryName
+                        + "/"
+                        + subCategoryName));
 
         for (MultipartFile file : imageDto.getFile()) {
             String url = cloudinaryService.uploadFile(file, "pricetag/" + categoryName + "/" + subCategoryName);
@@ -77,9 +74,8 @@ public class ImageServiceImpl implements ImageService {
                 throw new ApplicationException("500", "Database error", HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
-            Product product = existingProduct.get();
-            product.setImages(imageList);
-            productRepo.save(product);
+            existingProduct.setImages(imageList);
+            productRepo.save(existingProduct);
             return ResponseEntity.ok().body(CommonResponseDto
                     .builder()
                     .message("Image uploaded successfully")
@@ -90,7 +86,5 @@ public class ImageServiceImpl implements ImageService {
         } catch (DataAccessException ex) {
             throw new ApplicationException("500", "Database error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-
     }
 }

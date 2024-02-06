@@ -44,6 +44,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             ColorLogger.logInfo(id + " :: " + folderName);
             return cloudinary.uploader().destroy(id, options);
         } catch (IOException e) {
+            ColorLogger.logInfo("Error while deleting image " + e.getMessage());
             throw new RuntimeException(e);
         }
     }

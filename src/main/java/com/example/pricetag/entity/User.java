@@ -47,6 +47,10 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<CartItem> cartItems;
 
+    @OneToOne
+    @JoinColumn(name = "address_id")
+    private Address address;
+
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private Date createdAt;
