@@ -17,4 +17,6 @@ public interface ProductService {
 
     CommonResponseDto deleteProductById(Long productId);
 
+    CommonResponseDto editProduct(ProductDto productDto);
+
 }

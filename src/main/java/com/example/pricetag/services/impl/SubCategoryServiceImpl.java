@@ -49,6 +49,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
             newSubCategoryDto.setSubCategoryName(sub.getSubCategoryName());
             newSubCategoryDto.setCreatedAt(sub.getCreatedAt());
             newSubCategoryDto.setUpdatedAt(sub.getUpdatedAt());
+            newSubCategoryDto.setCategoryId(sub.getCategory().getId());
 
             subCategoryDtoList.add(newSubCategoryDto);
         });
@@ -69,6 +70,9 @@ public class SubCategoryServiceImpl implements SubCategoryService {
             SubCategory existingSubCategory = existingSubCategoryOptional.get();
 
             existingSubCategory.setSubCategoryName(subCategoryDto.getSubCategoryName());
+            if (subCategoryDto.getCategoryId() != null) {
+                existingSubCategory.setCategory(categoryRepo.findById(subCategoryDto.getCategoryId()).orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND)));
+            }
 
             try {
                 SubCategory savedSubCategory = subCategoryRepo.save(existingSubCategory);
@@ -146,13 +150,14 @@ public class SubCategoryServiceImpl implements SubCategoryService {
             List<SubCategoryDto> subCategoryDtoList = new ArrayList<>();
 
             subCategories.forEach(subCategory -> {
-                CategoryDto newCategoryDto = new CategoryDto();
-                newCategoryDto.setId(subCategory.getCategory().getId());
-                newCategoryDto.setCategoryName(subCategory.getCategory().getCategoryName());
+//                CategoryDto newCategoryDto = new CategoryDto();
+//                newCategoryDto.setId(subCategory.getCategory().getId());
+//                newCategoryDto.setCategoryName(subCategory.getCategory().getCategoryName());
 
                 subCategoryDtoList.add(SubCategoryDto
                         .builder()
                         .id(subCategory.getId())
+                        .categoryId(subCategory.getCategory().getId())
                         .subCategoryName(subCategory.getSubCategoryName())
                         .createdAt(subCategory.getCreatedAt())
                         .updatedAt(subCategory.getUpdatedAt())

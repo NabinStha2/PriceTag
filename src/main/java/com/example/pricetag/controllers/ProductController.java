@@ -76,4 +76,11 @@ public class ProductController {
         return ResponseEntity.ok(productService.deleteProductById(productId));
     }
 
+    @PatchMapping("/{productId}")
+    public ResponseEntity<CommonResponseDto> editProduct(@PathVariable(name = "productId") Long productId, @RequestBody ProductDto productDto)
+            throws ApplicationException {
+        productDto.setProductId(productId);
+        return ResponseEntity.ok(productService.editProduct(productDto));
+    }
+
 }

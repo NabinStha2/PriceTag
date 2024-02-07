@@ -15,6 +15,7 @@ import com.example.pricetag.services.CloudinaryService;
 import com.example.pricetag.services.ProductService;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -221,6 +222,37 @@ public class ProductServiceImpl implements ProductService {
                     .message("Product has been deleted successfully")
                     .success(true)
                     .build();
+        } else {
+            throw new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Override
+    public CommonResponseDto editProduct(ProductDto productDto) {
+        Optional<Product> productOptional = productRepo.findById(productDto.getProductId());
+
+        if (productOptional.isPresent()) {
+            Product product = productOptional.get();
+            product.setName(productDto.getName());
+            product.setDescription(productDto.getDescription());
+            if (productDto.getCategory() != null && productDto.getCategory().getId() != null) {
+                product.setCategory(categoryRepo.findById(productDto.getCategory().getId()).orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND)));
+            }
+            if (productDto.getSubCategory() != null && productDto.getSubCategory().getId() != null) {
+                product.setSubCategory(subCategoryRepo.findById(productDto.getSubCategory().getId()).orElseThrow(() -> new ApplicationException("404", "Sub Category not found", HttpStatus.NOT_FOUND)));
+            }
+
+            try {
+                productRepo.save(product);
+                return CommonResponseDto.builder()
+                        .message("Product has been updated successfully")
+                        .success(true)
+                        .data(Map.of("results", product))
+                        .build();
+            } catch (DataAccessException e) {
+                ColorLogger.logError("editProduct :: Database error :: " + e.getMessage());
+                throw new ApplicationException("500", "Database error", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         } else {
             throw new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND);
         }

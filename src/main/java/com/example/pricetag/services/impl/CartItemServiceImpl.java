@@ -14,7 +14,6 @@ import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.AuthService;
 import com.example.pricetag.services.CartItemService;
 import com.example.pricetag.utils.ColorLogger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -23,18 +22,19 @@ import java.util.*;
 @Service
 public class CartItemServiceImpl implements CartItemService {
 
-    @Autowired
-    private CartItemRepo cartItemRepo;
+    private final CartItemRepo cartItemRepo;
+    private final UserRepo userRepo;
+    private final ProductRepo productRepo;
+    private final AuthService authService;
+    private final VariantRepo variantRepo;
 
-    @Autowired
-    private UserRepo userRepo;
-
-    @Autowired
-    private ProductRepo productRepo;
-    @Autowired
-    private AuthService authService;
-    @Autowired
-    private VariantRepo variantRepo;
+    public CartItemServiceImpl(CartItemRepo cartItemRepo, UserRepo userRepo, ProductRepo productRepo, AuthService authService, VariantRepo variantRepo) {
+        this.cartItemRepo = cartItemRepo;
+        this.userRepo = userRepo;
+        this.productRepo = productRepo;
+        this.authService = authService;
+        this.variantRepo = variantRepo;
+    }
 
     private static CartItemDto buildCartItemDto(CartItem newCartItem, User existingUser) {
         return CartItemDto
@@ -93,7 +93,7 @@ public class CartItemServiceImpl implements CartItemService {
 
     }
 
-  
+
     @Override
     public CommonResponseDto createCart(AddCartItemDto addCartItemDto) {
         // Get the current user

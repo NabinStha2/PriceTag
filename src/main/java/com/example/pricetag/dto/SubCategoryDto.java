@@ -16,5 +16,6 @@ public class SubCategoryDto {
     private String subCategoryName;
     private Date createdAt;
     private Date updatedAt;
+    private Long categoryId;
     // private CategoryDto category;
 }
