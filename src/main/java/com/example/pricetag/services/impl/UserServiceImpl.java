@@ -1,6 +1,5 @@
 package com.example.pricetag.services.impl;
 
-import com.example.pricetag.entity.CartItem;
 import com.example.pricetag.entity.User;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.UserRepo;
@@ -13,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-
-import java.util.Comparator;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -32,7 +29,8 @@ public class UserServiceImpl implements UserService {
         UserResponse userResponse = UserResponse
                 .builder()
                 .id(user.getId())
-                .cartItems(user.getCartItems().stream().sorted(Comparator.comparing(CartItem::getCreatedAt).reversed()).toList())
+                .address(user.getAddress())
+//                .cartItems(user.getCartItems().stream().sorted(Comparator.comparing(CartItem::getCreatedAt).reversed()).toList())
                 .email(user.getEmail())
                 .name(user.getName())
                 .phoneNumber(user.getPhoneNumber())
