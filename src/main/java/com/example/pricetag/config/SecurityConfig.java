@@ -1,8 +1,10 @@
 package com.example.pricetag.config;
 
 import com.example.pricetag.enums.AppUserRole;
+import com.example.pricetag.exceptions.UnAuthorizedException;
 import com.example.pricetag.services.AuthService;
 import com.example.pricetag.utils.ColorLogger;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -27,6 +30,9 @@ public class SecurityConfig {
 
     @Autowired
     private JwtFilter jwtFilter;
+    @Autowired
+    private UnAuthorizedException unAuthorizedException;
+
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -38,10 +44,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         ColorLogger.logInfo("I am inside SecurityFilterChain");
         return httpSecurity.csrf(csrf -> csrf.disable())
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(unAuthorizedException))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/verify-otp", "/api/v1/auth/forgot-password",
                                 "/api/v1/auth/verify-forgot-password-otp", "/api/v1/auth/welcome")
                         .permitAll()
+                        .requestMatchers("/api/v1/category/add", "/api/v1/category/{categoryId}", "/api/v1/subcategory/{categoryId}/add",
+                                "/api/v1/subcategory/edit", "/api/v1/subcategory/{subCategoryId}", "/api/v1/category/{categoryId}/subcategory/{subCategoryId}/add",
+                                "/api/v1//{productId}", "/api/v1/image/upload")
+                        .hasRole(AppUserRole.ROLE_ADMIN.name().split("_")[1])
                         .requestMatchers("/user/**")
                         .hasAnyRole(AppUserRole.ROLE_USER.name().split("_")[1],
                                 AppUserRole.ROLE_ADMIN.name().split("_")[1])
@@ -50,6 +61,11 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+    @Bean
+    public UnAuthorizedException unAuthorizedException(ObjectMapper objectMapper) {
+        return new UnAuthorizedException(objectMapper);
     }
 
     @Bean
@@ -72,5 +88,6 @@ public class SecurityConfig {
         ColorLogger.logInfo("I am inside AuthenticationManager");
         return config.getAuthenticationManager();
     }
+
 
 }
