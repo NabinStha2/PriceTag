@@ -50,8 +50,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/verify-forgot-password-otp", "/api/v1/auth/welcome")
                         .permitAll()
                         .requestMatchers("/api/v1/category/add", "/api/v1/category/{categoryId}", "/api/v1/subcategory/{categoryId}/add",
-                                "/api/v1/subcategory/edit", "/api/v1/subcategory/{subCategoryId}", "/api/v1/category/{categoryId}/subcategory/{subCategoryId}/add",
-                                "/api/v1//{productId}", "/api/v1/image/upload")
+                                "/api/v1/subcategory/edit", "/api/v1/subcategory/{subCategoryId}", "/api/v1/product/category/{categoryId}/subcategory/{subCategoryId}/add",
+                                "/api/v1/product/{productId}", "/api/v1/image/upload")
                         .hasRole(AppUserRole.ROLE_ADMIN.name().split("_")[1])
                         .requestMatchers("/user/**")
                         .hasAnyRole(AppUserRole.ROLE_USER.name().split("_")[1],
