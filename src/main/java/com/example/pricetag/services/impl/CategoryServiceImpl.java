@@ -74,6 +74,9 @@ public class CategoryServiceImpl implements CategoryService {
             if (existingCategory.isEmpty()) {
                 throw new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND);
             }
+            existingCategory.get().getSubCategories().clear();
+            existingCategory.ifPresent(categoryRepo::save);
+
             categoryRepo.deleteById(categoryId);
 
             return CommonResponseDto

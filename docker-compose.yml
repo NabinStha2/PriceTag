@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  pricetag:
+    build: .
+    restart: always
+    ports:
+      - 8000:8080
+    depends_on:
+      - mysqldb
+    environment:
+      spring.datasource.url: jdbc:mysql://mysqldb:3306/${MYSQL_DATABASE}?createDatabaseIfNotExist=true
+      spring.datasource.username: ${MYSQL_USERNAME}
+      spring.datasource.password: ${MYSQL_PASSWORD}
+    networks:
+      pricetag-network:
+        aliases:
+          - pricetag
+
+  mysqldb:
+    platform: linux/x86_64
+    image: mysql:5.7
+    restart: always
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+    networks:
+      pricetag-network:
+        aliases:
+          - mysqldb
+
+networks:
+  pricetag-network:
+    driver: bridge
