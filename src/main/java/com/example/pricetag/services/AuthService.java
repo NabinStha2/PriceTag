@@ -57,7 +57,7 @@ public class AuthService implements UserDetailsService {
         ColorLogger.logInfo("I am inside AuthService loadUserByUsername");
         Optional<User> user = authRepository.findByEmail(username);
         return user.map(AuthDetails::new)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found" + username));
+                .orElseThrow(() -> new UsernameNotFoundException("Email not found " + username));
     }
 
     public CommonResponseDto register(RegisterUserDto registerUserDto) throws ApplicationException {
@@ -164,7 +164,7 @@ public class AuthService implements UserDetailsService {
                 }).orElseThrow(() -> new ApplicationException(null, "Refresh Token not found", HttpStatus.BAD_REQUEST));
     }
 
-    public AuthResponseDto login(AuthDto authDto) throws ApplicationException {
+    public CommonResponseDto login(AuthDto authDto) throws ApplicationException {
 
         User user = this.userRepo.findByEmail(authDto.getEmail())
                 .orElseThrow(() -> new ApplicationException("404", "Email not found",
@@ -184,7 +184,17 @@ public class AuthService implements UserDetailsService {
                     .accessToken(jwtService.generateToken(authDto.getEmail()))
                     .refreshToken(refreshToken.getToken())
                     .build();
-            return authResponseDto;
+
+            CommonResponseDto commonResponseDto = CommonResponseDto
+                    .builder()
+                    .data(authResponseDto)
+                    .success(true)
+                    .message("Login Successfully")
+                    .build();
+
+            System.out.println(commonResponseDto);
+
+            return commonResponseDto;
         } else {
             throw new ApplicationException("400", "Account has been not verified. Please verify your account",
                     HttpStatus.BAD_REQUEST);
