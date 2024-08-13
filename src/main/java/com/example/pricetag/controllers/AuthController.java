@@ -39,7 +39,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(@RequestBody AuthDto authDto) throws Exception {
+    public ResponseEntity<CommonResponseDto> login(@RequestBody AuthDto authDto) throws Exception {
         try {
             Authentication authenticate = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(authDto.getEmail(),

@@ -21,8 +21,8 @@ public class AuthDetails implements UserDetails {
         password = user.getPassword();
         id = user.getId();
 
-        // ColorLogger.logInfo("AuthDetails :: AppUserRole :: " +
-        // user.getAppUserRole().name());
+        ColorLogger.logInfo("AuthDetails :: AppUserRole :: " +
+                user.getAppUserRole().name());
         authorities = Collections.singletonList(new SimpleGrantedAuthority(user.getAppUserRole().name()));
     }
 
