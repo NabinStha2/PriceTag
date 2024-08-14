@@ -34,8 +34,8 @@ public class AuthController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<AuthResponseDto> verifyOtp(@RequestBody OtpDto otpDto) throws ApplicationException {
-        return new ResponseEntity<AuthResponseDto>(authService.verifyOtp(otpDto), HttpStatus.CREATED);
+    public ResponseEntity<CommonResponseDto> verifyOtp(@RequestBody OtpDto otpDto) throws ApplicationException {
+        return new ResponseEntity<CommonResponseDto>(authService.verifyOtp(otpDto), HttpStatus.OK);
     }
 
     @PostMapping("/login")

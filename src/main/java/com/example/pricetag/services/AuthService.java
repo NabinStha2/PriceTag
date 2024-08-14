@@ -66,17 +66,6 @@ public class AuthService implements UserDetailsService {
         User existingUser = this.authRepository.findByEmail(registerUserDto.getEmail()).orElse(null);
 
         if (existingUser == null || !existingUser.isVerified()) {
-            Integer otpCode = otpGeneratorUtil.generateOTP(registerUserDto.getEmail());
-            try {
-                EmailDto newEmailDto = new EmailDto();
-                newEmailDto.setRecipients(List.of(registerUserDto.getEmail()));
-                newEmailDto.setSubject("Otp Code");
-                newEmailDto.setBody("Your otp code is: " + otpCode);
-                emailUtils.sendOtpEmail(newEmailDto);
-            } catch (MessagingException e) {
-                throw new RuntimeException("Unable to send otp please try again");
-            }
-
             otpRepo.findByUser(existingUser).ifPresent(existingOtp -> otpRepo.delete(existingOtp));
 
             if (existingUser != null) {
@@ -93,8 +82,20 @@ public class AuthService implements UserDetailsService {
             newUser.setAppUserRole(AppUserRole.ROLE_USER);
             newUser.setVerified(false);
             ColorLogger.logInfo("user :: " + newUser);
-            authRepository.save(newUser);
 
+
+            Integer otpCode = otpGeneratorUtil.generateOTP(registerUserDto.getEmail());
+            try {
+                EmailDto newEmailDto = new EmailDto();
+                newEmailDto.setRecipients(List.of(registerUserDto.getEmail()));
+                newEmailDto.setSubject("Otp Code");
+                newEmailDto.setBody("Your otp code is: " + otpCode);
+                emailUtils.sendOtpEmail(newEmailDto);
+            } catch (MessagingException e) {
+                throw new RuntimeException("Unable to send otp please try again");
+            }
+
+            authRepository.save(newUser);
             Otp newOtp = new Otp();
             newOtp.setOtpCode(otpCode);
             newOtp.setUser(newUser);
@@ -111,7 +112,7 @@ public class AuthService implements UserDetailsService {
         }
     }
 
-    public AuthResponseDto verifyOtp(OtpDto otpDto) throws ApplicationException {
+    public CommonResponseDto verifyOtp(OtpDto otpDto) throws ApplicationException {
         ColorLogger
                 .logInfo("I am inside AuthService verifyOtp");
         User existingUser = this.authRepository.findByEmail(otpDto.getEmail()).orElse(null);
@@ -139,10 +140,16 @@ public class AuthService implements UserDetailsService {
             RefreshToken refreshToken = refreshTokenService
                     .createRefreshToken(otpDto.getEmail());
             var jwtToken = jwtService.generateToken(otpDto.getEmail());
-            return AuthResponseDto
+            AuthResponseDto authResponseDto = AuthResponseDto
                     .builder()
                     .accessToken(jwtToken)
                     .refreshToken(refreshToken.getToken())
+                    .build();
+            return CommonResponseDto
+                    .builder()
+                    .data(authResponseDto)
+                    .success(true)
+                    .message("Login Successfully")
                     .build();
         } else {
             throw new ApplicationException("400", "Email already registered", HttpStatus.BAD_REQUEST);
