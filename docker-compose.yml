@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   pricetag:
+#    container_name: pricetag
     build: .
     restart: always
     ports:
@@ -15,11 +16,11 @@ services:
     networks:
       pricetag-network:
         aliases:
-          - pricetag
+          - pricetag-net
 
   mysqldb:
     platform: linux/x86_64
-    image: mysql:5.7
+    image: mysql
     restart: always
     ports:
       - 3307:3306
@@ -29,7 +30,7 @@ services:
     networks:
       pricetag-network:
         aliases:
-          - mysqldb
+          - mysqldb-net
 
 networks:
   pricetag-network:

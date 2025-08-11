@@ -13,7 +13,11 @@ public interface ProductService {
 
     CommonResponseDto getAllProducts(PaginationDto paginationDto);
 
+    CommonResponseDto getSingleProduct(Long productId);
+
     CommonResponseDto getProductsWithSubCategoryId(SubCategoryDto subCategoryDto, PaginationDto paginationDto);
+
+    CommonResponseDto getSearchProductsWithSubCategoryIdAndName(SubCategoryDto subCategoryDto, PaginationDto paginationDto, String name);
 
     CommonResponseDto deleteProductById(Long productId);
 

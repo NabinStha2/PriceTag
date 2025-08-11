@@ -56,13 +56,11 @@ public class AuthService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         ColorLogger.logInfo("I am inside AuthService loadUserByUsername");
         Optional<User> user = authRepository.findByEmail(username);
-        return user.map(AuthDetails::new)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found" + username));
+        return user.map(AuthDetails::new).orElseThrow(() -> new UsernameNotFoundException("User not found" + username));
     }
 
     public CommonResponseDto register(RegisterUserDto registerUserDto) throws ApplicationException {
-        ColorLogger
-                .logInfo("I am inside AuthService register" + registerUserDto.toString());
+        ColorLogger.logInfo("I am inside AuthService register" + registerUserDto.toString());
         User existingUser = this.authRepository.findByEmail(registerUserDto.getEmail()).orElse(null);
 
         if (existingUser == null || !existingUser.isVerified()) {
@@ -100,11 +98,7 @@ public class AuthService implements UserDetailsService {
             newOtp.setUser(newUser);
             otpRepo.save(newOtp);
 
-            return CommonResponseDto
-                    .builder()
-                    .success(true)
-                    .message("Otp code has been sent successfully")
-                    .build();
+            return CommonResponseDto.builder().success(true).message("Otp code has been sent successfully").build();
 
         } else {
             throw new ApplicationException("400", "Email already exists", HttpStatus.BAD_REQUEST);
@@ -112,16 +106,14 @@ public class AuthService implements UserDetailsService {
     }
 
     public AuthResponseDto verifyOtp(OtpDto otpDto) throws ApplicationException {
-        ColorLogger
-                .logInfo("I am inside AuthService verifyOtp");
+        ColorLogger.logInfo("I am inside AuthService verifyOtp");
         User existingUser = this.authRepository.findByEmail(otpDto.getEmail()).orElse(null);
         if (existingUser != null && !existingUser.isVerified()) {
             Optional<Otp> existingOtp = otpRepo.findByUser(existingUser);
 
             if (existingOtp.isPresent()) {
                 if (existingOtp.get().getOtpCode() == otpDto.getOtpCode()) {
-                    if (Duration.between(existingOtp.get().getOtpGenerationTime(),
-                            LocalDateTime.now()).getSeconds() < (5 * 60)) {
+                    if (Duration.between(existingOtp.get().getOtpGenerationTime(), LocalDateTime.now()).getSeconds() < (5 * 60)) {
                         otpRepo.delete(existingOtp.get());
                         existingUser.setVerified(true);
                         userRepo.save(existingUser);
@@ -136,70 +128,45 @@ public class AuthService implements UserDetailsService {
                 throw new ApplicationException("404", "Otp not found", HttpStatus.NOT_FOUND);
             }
 
-            RefreshToken refreshToken = refreshTokenService
-                    .createRefreshToken(otpDto.getEmail());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(otpDto.getEmail());
             var jwtToken = jwtService.generateToken(otpDto.getEmail());
-            return AuthResponseDto
-                    .builder()
-                    .accessToken(jwtToken)
-                    .refreshToken(refreshToken.getToken())
-                    .build();
+            return AuthResponseDto.builder().success(true).message("Email verified successfully").data(AuthResponseDto.AuthResponseDataDto.builder().accessToken(jwtToken).refreshToken(refreshToken.getToken()).build()).build();
         } else {
             throw new ApplicationException("400", "Email already registered", HttpStatus.BAD_REQUEST);
         }
     }
 
     public AuthResponseDto getNewTokenByRefreshToken(RefreshTokenDto refreshTokenDto) throws ApplicationException {
-        return refreshTokenService
-                .findByToken(refreshTokenDto.getToken())
-                .map(refreshTokenService::verifyRefreshTokenExpirationDate)
-                .map(RefreshToken::getUser)
-                .map(user -> {
-                    ColorLogger.logInfo("refreshToken :: user: " + user);
-                    String accessToken = jwtService.generateToken(user.getEmail());
-                    return AuthResponseDto
-                            .builder()
-                            .accessToken(accessToken)
-                            .build();
-                }).orElseThrow(() -> new ApplicationException(null, "Refresh Token not found", HttpStatus.BAD_REQUEST));
+        return refreshTokenService.findByToken(refreshTokenDto.getToken()).map(refreshTokenService::verifyRefreshTokenExpirationDate).map(RefreshToken::getUser).map(user -> {
+            ColorLogger.logInfo("refreshToken :: user: " + user);
+            String accessToken = jwtService.generateToken(user.getEmail());
+            return AuthResponseDto.builder().success(true).message("Token refreshed successfully").data(AuthResponseDto.AuthResponseDataDto.builder().accessToken(accessToken).build()).build();
+        }).orElseThrow(() -> new ApplicationException(null, "Refresh Token not found", HttpStatus.BAD_REQUEST));
     }
 
     public AuthResponseDto login(AuthDto authDto) throws ApplicationException {
 
-        User user = this.userRepo.findByEmail(authDto.getEmail())
-                .orElseThrow(() -> new ApplicationException("404", "Email not found",
-                        HttpStatus.NOT_FOUND));
+        User user = this.userRepo.findByEmail(authDto.getEmail()).orElseThrow(() -> new ApplicationException("404", "Email not found", HttpStatus.NOT_FOUND));
         ColorLogger.logError(user.toString());
 
         if (user.isVerified()) {
-            Optional<RefreshToken> existingRefreshToken = refreshTokenService
-                    .getRefreshTokenByUser(user);
+            Optional<RefreshToken> existingRefreshToken = refreshTokenService.getRefreshTokenByUser(user);
             existingRefreshToken.ifPresent(token -> refreshTokenRepo.delete(existingRefreshToken.get()));
 
-            RefreshToken refreshToken = refreshTokenService
-                    .createRefreshToken(authDto.getEmail());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(authDto.getEmail());
 
-            AuthResponseDto authResponseDto = AuthResponseDto
-                    .builder()
-                    .accessToken(jwtService.generateToken(authDto.getEmail()))
-                    .refreshToken(refreshToken.getToken())
-                    .build();
+            AuthResponseDto authResponseDto = AuthResponseDto.builder().success(true).message("Login successful").data(AuthResponseDto.AuthResponseDataDto.builder().accessToken(jwtService.generateToken(authDto.getEmail())).refreshToken(refreshToken.getToken()).build()).build();
             return authResponseDto;
         } else {
-            throw new ApplicationException("400", "Account has been not verified. Please verify your account",
-                    HttpStatus.BAD_REQUEST);
+            throw new ApplicationException("400", "Account has been not verified. Please verify your account", HttpStatus.BAD_REQUEST);
         }
     }
 
-    public CommonResponseDto forgotPassword(ForgotPasswordDto forgotPasswordDto)
-            throws ApplicationException {
+    public CommonResponseDto forgotPassword(ForgotPasswordDto forgotPasswordDto) throws ApplicationException {
         // try {
-        ColorLogger
-                .logInfo("I am inside AuthService forgotPassword");
+        ColorLogger.logInfo("I am inside AuthService forgotPassword");
         // String email = jwtService.extractUserName(jwtToken);
-        User existingUser = authRepository.findByEmail(forgotPasswordDto.getEmail())
-                .orElseThrow(() -> new ApplicationException("404", "Email not found",
-                        HttpStatus.NOT_FOUND));
+        User existingUser = authRepository.findByEmail(forgotPasswordDto.getEmail()).orElseThrow(() -> new ApplicationException("404", "Email not found", HttpStatus.NOT_FOUND));
         if (existingUser != null) {
             Integer otpCode = otpGeneratorUtil.generateOTP(existingUser.getEmail());
             try {
@@ -222,11 +189,7 @@ public class AuthService implements UserDetailsService {
             newOtp.setUser(existingUser);
             otpRepo.save(newOtp);
 
-            return CommonResponseDto
-                    .builder()
-                    .message("Otp sent successfully")
-                    .success(true)
-                    .build();
+            return CommonResponseDto.builder().message("Otp sent successfully").success(true).build();
         }
         // } catch (Exception e) {
         // ColorLogger.logError("I am inside forgotPassword Error :: " +
@@ -238,18 +201,14 @@ public class AuthService implements UserDetailsService {
     }
 
     public CommonResponseDto verifyForgotPasswordOtp(OtpDto otpDto) throws ApplicationException {
-        ColorLogger
-                .logInfo("I am inside AuthService verifyForgotPasswordOtp");
-        User existingUser = this.authRepository.findByEmail(otpDto.getEmail())
-                .orElseThrow(() -> new ApplicationException("404", "Email not found",
-                        HttpStatus.NOT_FOUND));
+        ColorLogger.logInfo("I am inside AuthService verifyForgotPasswordOtp");
+        User existingUser = this.authRepository.findByEmail(otpDto.getEmail()).orElseThrow(() -> new ApplicationException("404", "Email not found", HttpStatus.NOT_FOUND));
         if (existingUser != null && existingUser.isVerified()) {
             Optional<Otp> existingOtp = otpRepo.findByUser(existingUser);
 
             if (existingOtp.isPresent()) {
                 if (existingOtp.get().getOtpCode() == otpDto.getOtpCode()) {
-                    if (Duration.between(existingOtp.get().getOtpGenerationTime(),
-                            LocalDateTime.now()).getSeconds() < (60)) {
+                    if (Duration.between(existingOtp.get().getOtpGenerationTime(), LocalDateTime.now()).getSeconds() < (60)) {
                         otpRepo.delete(existingOtp.get());
                         existingUser.setPassword(passwordEncoder.encode(otpDto.getNewPassword()));
                         userRepo.save(existingUser);
@@ -264,11 +223,7 @@ public class AuthService implements UserDetailsService {
                 throw new ApplicationException("404", "Otp not found", HttpStatus.NOT_FOUND);
             }
 
-            return CommonResponseDto
-                    .builder()
-                    .message("Password reset successfully")
-                    .success(true)
-                    .build();
+            return CommonResponseDto.builder().message("Password reset successfully").success(true).build();
 
         } else {
             throw new ApplicationException("400", "Email already registered", HttpStatus.BAD_REQUEST);
@@ -276,8 +231,7 @@ public class AuthService implements UserDetailsService {
     }
 
     public User getUser() {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
-                .getPrincipal();
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         ColorLogger.logInfo("I am inside getCart :: " + userDetails.getUsername());
         User existingUser = userRepo.findByEmail(userDetails.getUsername()).orElse(null);
         if (existingUser == null) {

@@ -49,6 +49,14 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAllProducts(paginationDto));
     }
 
+    @GetMapping("/{productId}")
+    public ResponseEntity<CommonResponseDto> getSingleProduct(
+            @PathVariable(name = "productId") Long productId
+    )
+            throws ApplicationException {
+        return ResponseEntity.ok(productService.getSingleProduct(productId));
+    }
+
     @GetMapping("/subcategory/{subCategoryId}")
     public ResponseEntity<CommonResponseDto> getProductsWithSubCategoryId(
             @PathVariable(name = "subCategoryId") Long subCategoryId,
@@ -66,8 +74,30 @@ public class ProductController {
                 .sortBy(sortBy)
                 .order(order)
                 .build();
-        ColorLogger.logInfo("paginationDto :: " + paginationDto.toString());
+//        ColorLogger.logInfo("paginationDto :: " + paginationDto.toString());
         return ResponseEntity.ok(productService.getProductsWithSubCategoryId(subCategoryDto, paginationDto));
+    }
+
+    @GetMapping("/subcategory/{subCategoryId}/search")
+    public ResponseEntity<CommonResponseDto> getSearchProductsWithSubCategoryId(
+            @PathVariable(name = "subCategoryId") Long subCategoryId,
+            @RequestParam(name = "page", defaultValue = "1", required = false) int page,
+            @RequestParam(name = "limit", defaultValue = "5", required = false) int limit,
+            @RequestParam(name = "sortBy", required = false) String sortBy,
+            @RequestParam(name = "order", required = false) String order,
+            @RequestParam(name = "name", required = false) String name)
+            throws ApplicationException {
+        SubCategoryDto subCategoryDto = new SubCategoryDto();
+        subCategoryDto.setId(subCategoryId);
+        PaginationDto paginationDto = PaginationDto
+                .builder()
+                .page(page)
+                .limit(limit)
+                .sortBy(sortBy)
+                .order(order)
+                .build();
+        ColorLogger.logInfo("paginationDto :: " + paginationDto.toString());
+        return ResponseEntity.ok(productService.getSearchProductsWithSubCategoryIdAndName(subCategoryDto, paginationDto, name));
     }
 
     @DeleteMapping("/{productId}")
