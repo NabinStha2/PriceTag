@@ -22,5 +22,4 @@ public class ProductDto {
     private List<Variants> variants;
     private Date createdAt;
     private Date updatedAt;
-
 }
