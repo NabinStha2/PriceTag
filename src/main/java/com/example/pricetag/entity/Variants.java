@@ -3,6 +3,7 @@ package com.example.pricetag.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class Variants {
     private List<String> size = new ArrayList<>();
 
     @Column(name = "color")
-    private String color;
+    private Color color;
 
     @Column(name = "quantity")
     private Long quantity = 0L;
@@ -33,5 +34,9 @@ public class Variants {
 
     @Column(name = "discounted_price")
     private Double discountedPrice;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    private Product product;
 
 }

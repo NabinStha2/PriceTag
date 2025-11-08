@@ -1,7 +1,5 @@
 package com.example.pricetag.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,7 +15,7 @@ import java.util.List;
 @Table(name = "product")
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"category", "subCategory"})
+//@JsonIgnoreProperties({"category", "subCategory"})
 public class Product {
 
     @Id
@@ -30,21 +28,29 @@ public class Product {
     @Column(name = "description", nullable = false, columnDefinition = "longtext")
     private String description;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @JsonManagedReference
-    @ManyToOne(fetch = FetchType.EAGER)
+    //    @JsonManagedReference
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id", nullable = false)
     private SubCategory subCategory;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Column(name = "total_rating")
+    private double totalRating = 0;
+
+    @Column(name = "total_review")
+    private Integer totalReview = 0;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "products_id")
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Variants> variants;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RatingReview> ratingReviews;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")

@@ -2,11 +2,14 @@ version: "3.8"
 
 services:
   pricetag:
-#    container_name: pricetag
-    build: .
+    container_name: pricetag-java-springboot
+    image: nabinstha/pricetag-java-springboot:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: always
     ports:
-      - 8000:8080
+      - "8000:8080"
     depends_on:
       - mysqldb
     environment:
@@ -19,14 +22,20 @@ services:
           - pricetag-net
 
   mysqldb:
-    platform: linux/x86_64
+    platform: linux/amd64
+    #    image: nabinstha/pricetag-mysql:latest   # 👈 Your MySQL repo
     image: mysql
+    container_name: pricetag-mysql
     restart: always
     ports:
-      - 3307:3306
+      - "3307:3306"
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+    #    command:
+    #      - --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./mysql-data:/var/lib/mysql
     networks:
       pricetag-network:
         aliases:

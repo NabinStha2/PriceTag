@@ -24,4 +24,8 @@ public class Image {
     @Column(name = "public_id_image")
     private String publicId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
+    private Product product;
+
 }
