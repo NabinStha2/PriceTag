@@ -1,11 +1,7 @@
 package com.example.pricetag.config;
 
 import com.example.pricetag.enums.AppUserRole;
-import com.example.pricetag.exceptions.UnAuthorizedException;
-import com.example.pricetag.services.AuthService;
 import com.example.pricetag.utils.ColorLogger;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -33,61 +30,42 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtFilter jwtFilter;
-    @Autowired
-    private UnAuthorizedException unAuthorizedException;
+    // Public endpoints that don't require authentication
+    private static final String[] PUBLIC_ENDPOINTS = {"/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/verify-otp", "/api/v1/auth/forgot-password", "/api/v1/auth/verify-forgot-password-otp", "/api/v1/auth/welcome", "/", "/actuator/health", "/swagger-ui/**", "/v3/api-docs/**"};
 
+    // Admin-only endpoints
+    private static final String[] ADMIN_ENDPOINTS = {"/api/v1/category/add", "/api/v1/subcategory/{categoryId}/add", "/api/v1/subcategory/edit", "/api/v1/product/category/{categoryId}/subcategory/{subCategoryId}/add", "/api/v1/image/upload"};
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        ColorLogger.logInfo("I am inside UserDetailsService");
-        return new AuthService();
+    // User-accessible endpoints (both USER and ADMIN roles)
+    private static final String[] USER_ENDPOINTS = {"/user/**", "/api/v1/category/{categoryId}", "/api/v1/subcategory/{subCategoryId}", "/api/v1/product/{productId}"};
+
+    // Helper method to extract role name
+    private String extractRole(AppUserRole role) {
+        return role.name().substring(role.name().indexOf("_") + 1);
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        ColorLogger.logInfo("I am inside SecurityFilterChain");
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService, JwtFilter jwtFilter) throws Exception {
+        ColorLogger.logInfo("Configuring security filter chain");
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/verify-otp", "/api/v1/auth/forgot-password",
-                                "/api/v1/auth/verify-forgot-password-otp", "/api/v1/auth/welcome", "/")
+                .authorizeHttpRequests(auth -> auth.requestMatchers(PUBLIC_ENDPOINTS)
                         .permitAll()
-                        .requestMatchers("/api/v1/category/add", "/api/v1/subcategory/{categoryId}/add",
-                                "/api/v1/subcategory/edit", "/api/v1/product/category/{categoryId}/subcategory/{subCategoryId}/add",
-                                "/api/v1/image/upload")
-                        .hasRole(AppUserRole.ROLE_ADMIN.name().split("_")[1])
-                        .requestMatchers("/user/**", "/api/v1/category/{categoryId}", "/api/v1/subcategory/{subCategoryId}", "/api/v1/product/{productId}")
-                        .hasAnyRole(AppUserRole.ROLE_ADMIN.name().split("_")[1])
-                        .requestMatchers("/user/**", "/api/v1/category/{categoryId}", "/api/v1/subcategory/{subCategoryId}", "/api/v1/product/{productId}")
-                        .hasAnyRole(AppUserRole.ROLE_USER.name().split("_")[1],
-                                AppUserRole.ROLE_ADMIN.name().split("_")[1])
-                        .anyRequest().authenticated())
+                        .requestMatchers(ADMIN_ENDPOINTS)
+                        .hasRole(extractRole(AppUserRole.ROLE_ADMIN))
+                        .requestMatchers(USER_ENDPOINTS)
+                        .hasAnyRole(extractRole(AppUserRole.ROLE_USER), extractRole(AppUserRole.ROLE_ADMIN))
+                        .anyRequest()
+                        .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
+                .authenticationProvider(authenticationProvider(passwordEncoder, userDetailsService))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
     @Bean
-    public UnAuthorizedException unAuthorizedException(ObjectMapper objectMapper) {
-        return new UnAuthorizedException(objectMapper);
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        ColorLogger.logInfo("I am inside AuthenticationProvider");
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setHideUserNotFoundExceptions(false);
-        authenticationProvider.setUserDetailsService(userDetailsService());
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
-    }
-
-    @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12); // Stronger encryption
     }
 
     @Bean
@@ -97,11 +75,31 @@ public class SecurityConfig {
     }
 
     @Bean
+    public AuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder, UserDetailsService userDetailsService) {
+        ColorLogger.logInfo("I am inside AuthenticationProvider");
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
+        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
+        return daoAuthenticationProvider;
+    }
+
+
+    @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
-        configuration.setAllowedMethods(List.of("*"));
+
+        // Configure allowed origins (more secure than wildcard)
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000",  // React dev server
+                "http://localhost:8080",  // Spring Boot server
+                "https://yourdomain.com"  // Production domain
+        ));
+
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

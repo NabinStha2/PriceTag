@@ -1,5 +1,6 @@
 package com.example.pricetag.services.impl;
 
+import com.example.pricetag.entity.Role;
 import com.example.pricetag.entity.User;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.UserRepo;
@@ -12,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -26,20 +29,21 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new ApplicationException("404", "User not found", HttpStatus.NOT_FOUND);
         }
-        UserResponse userResponse = UserResponse
+        //                .cartItems(user.getCartItems().stream().sorted(Comparator.comparing(CartItem::getCreatedAt).reversed()).toList())
+        //                .appUserRole(user.getAppUserRole())
+
+        return UserResponse
                 .builder()
                 .id(user.getId())
-                .address(user.getAddress())
+                .addresses(user.getAddresses())
 //                .cartItems(user.getCartItems().stream().sorted(Comparator.comparing(CartItem::getCreatedAt).reversed()).toList())
                 .email(user.getEmail())
                 .name(user.getName())
                 .phoneNumber(user.getPhoneNumber())
-                .appUserRole(user.getAppUserRole())
+                .appUserRole(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()))
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
-
-        return userResponse;
 
     }
 
@@ -50,17 +54,17 @@ public class UserServiceImpl implements UserService {
             throw new ApplicationException("404", "User not found", HttpStatus.NOT_FOUND);
         }
 
-        UserResponse userResponse = UserResponse
+        //                .appUserRole(user.getAppUserRole())
+        return UserResponse
                 .builder()
                 .id(user.getId())
                 .email(user.getEmail())
                 .name(user.getName())
                 .phoneNumber(user.getPhoneNumber())
-                .appUserRole(user.getAppUserRole())
+//                .appUserRole(user.getAppUserRole())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
-        return userResponse;
 
     }
 
@@ -99,17 +103,17 @@ public class UserServiceImpl implements UserService {
                     .setPhoneNumber(user.getPhoneNumber() == null ? existingUser.getPhoneNumber() : user.getPhoneNumber());
 
             userRepo.save(existingUser);
-            UserResponse userResponse = UserResponse
+            //                    .appUserRole(existingUser.getAppUserRole())
+            return UserResponse
                     .builder()
                     .id(existingUser.getId())
                     .email(existingUser.getEmail())
                     .name(existingUser.getName())
                     .phoneNumber(existingUser.getPhoneNumber())
-                    .appUserRole(existingUser.getAppUserRole())
+//                    .appUserRole(existingUser.getAppUserRole())
                     .createdAt(existingUser.getCreatedAt())
                     .updatedAt(existingUser.getUpdatedAt())
                     .build();
-            return userResponse;
         } catch (Exception e) {
             throw new ApplicationException("500", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

@@ -1,65 +1,129 @@
 package com.example.pricetag.entity;
 
-import com.example.pricetag.enums.AppUserRole;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.beans.factory.annotation.Value;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Builder
 @Entity
-@Table(name = "users")
+@Table(name = "users",
+       indexes = {
+               @Index(columnList = "email",
+                      name = "idx_user_email"
+               )
+       }
+)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties(value = {"password", "cartItems"})
+//@JsonIgnoreProperties(value = {"password"})
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(name = "name", length = 100, nullable = false)
+    @Column(name = "name",
+            length = 100,
+            nullable = false
+    )
     private String name;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email",
+            nullable = false,
+            unique = true
+    )
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password",
+            nullable = false
+    )
+    @JsonIgnore
     private String password;
 
-    @Column(name = "phoneNumber", nullable = false)
-    private Long phoneNumber;
+    @Column(name = "phoneNumber",
+            nullable = true
+    )
+    private String phoneNumber;
 
-    @Enumerated(EnumType.STRING)
-    private AppUserRole appUserRole;
+//    @Enumerated(EnumType.STRING)
+//    private AppUserRole appUserRole;
 
-    @Column(name = "verified")
-    @Value("false")
-    private boolean verified;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<CartItem> cartItems;
+    @Column(name = "is_verified",
+            nullable = false
+    )
+    private boolean isVerified = false;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "address_id", referencedColumnName = "id")
-    private Address address;
+//    @OneToMany(mappedBy = "user",
+//               cascade = CascadeType.ALL,
+//               orphanRemoval = true,
+//               fetch = FetchType.LAZY
+//    )
+//    private List<CartItem> cartItems;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<RatingReview> ratingReview;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles",
+               joinColumns = @JoinColumn(name = "user_id"),
+               inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "user",
+               cascade = CascadeType.ALL,
+               orphanRemoval = true,
+               fetch = FetchType.LAZY
+    )
+    private List<Address> addresses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user",
+               cascade = CascadeType.ALL,
+               orphanRemoval = true,
+               fetch = FetchType.LAZY
+    )
+    private List<RatingReview> ratingReviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user",
+               fetch = FetchType.LAZY
+    )
+    private List<Order> orders = new ArrayList<>();
+
+    @OneToOne(mappedBy = "user",
+              cascade = CascadeType.ALL,
+              fetch = FetchType.LAZY
+    )
+    private Cart cart;
+
+    @Column(name = "is_active",
+            nullable = false
+    )
+    private Boolean isActive = true;
+
+    @Column(name = "is_deleted",
+            nullable = false
+    )
+    private Boolean isDeleted = false;
 
     @CreationTimestamp
-    @Column(updatable = false, name = "created_at")
-    private Date createdAt;
+    @Column(updatable = false,
+            name = "created_at"
+    )
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
+
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
 
 }

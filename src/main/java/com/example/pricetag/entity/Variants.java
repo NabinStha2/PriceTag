@@ -3,9 +3,7 @@ package com.example.pricetag.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;
 
 @Entity
 @Getter
@@ -13,30 +11,85 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "variants")
+@Table(name = "variants",
+       uniqueConstraints = {@UniqueConstraint(columnNames = {"size", "color_id", "product_id"})},
+       indexes = {@Index(columnList = "product_id",
+                         name = "idx_product_id"
+       ), @Index(columnList = "sku",
+                 name = "idx_sku"
+       ), @Index(columnList = "color_id",
+                 name = "idx_color_id"
+       )}
+)
 public class Variants {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ElementCollection
-    private List<String> size = new ArrayList<>();
-
-    @Column(name = "color")
-    private Color color;
-
-    @Column(name = "quantity")
-    private Long quantity = 0L;
-
-    @Column(name = "actual_price", nullable = false)
-    private Double actualPrice;
-
-    @Column(name = "discounted_price")
-    private Double discountedPrice;
+//    @Column(name = "size")
+//    private String size;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @JoinColumn(name = "size_id",
+                nullable = false
+    )
+    private Size size;
+
+    //    @Column(name = "color")
+//    @Enumerated(EnumType.STRING)
+//    private ColorType color;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "color_id",
+                nullable = false
+    )
+    private Color color;
+
+    // SKU Code (VERY IMPORTANT)
+    @Column(name = "sku",
+            nullable = false,
+            unique = true,
+            length = 100
+    )
+    private String sku;
+
+    @Column(name = "stock_quantity",
+            nullable = false
+    )
+    private Integer stockQuantity = 0;
+
+    @Column(name = "actual_price",
+            nullable = false,
+            precision = 10,
+            scale = 2
+    )
+    private BigDecimal actualPrice;
+
+    @Column(name = "discounted_price",
+            precision = 10,
+            scale = 2
+    )
+    private BigDecimal discountedPrice;
+
+    @Column(name = "weight_in_grams")
+    private Integer weightInGrams;
+
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id",
+                nullable = false,
+                referencedColumnName = "id"
+    )
     private Product product;
+
+//    enum ColorType {
+//        RED, GREEN, BLUE, YELLOW, ORANGE, PINK, PURPLE, BLACK, WHITE, GRAY, BROWN, GOLD, SILVER
+//    }
 
 }

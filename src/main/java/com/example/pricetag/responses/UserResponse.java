@@ -1,13 +1,15 @@
 package com.example.pricetag.responses;
 
 import com.example.pricetag.entity.Address;
-import com.example.pricetag.enums.AppUserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -16,10 +18,10 @@ import java.util.Date;
 public class UserResponse {
     private Long id;
     private String name;
-    private Address address;
+    private List<Address> addresses = new ArrayList<>();
     private String email;
-    private Long phoneNumber;
-    private AppUserRole appUserRole;
-    private Date createdAt;
-    private Date updatedAt;
+    private String phoneNumber;
+    private Set<String> appUserRole;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

@@ -7,7 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -21,13 +22,13 @@ public class CartItemDto {
 
     private ProductDto product;
 
-    private Long quantity;
+    private Integer quantity;
 
-    private Double checkoutAmt;
+    private BigDecimal checkoutAmt;
 
     private Variants variants;
 
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
 }

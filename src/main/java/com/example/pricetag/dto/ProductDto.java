@@ -4,7 +4,7 @@ import com.example.pricetag.entity.Image;
 import com.example.pricetag.entity.Variants;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -20,6 +20,6 @@ public class ProductDto {
     private String description;
     private List<Image> images;
     private List<Variants> variants;
-    private Date createdAt;
-    private Date updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
