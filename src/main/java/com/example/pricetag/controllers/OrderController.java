@@ -1,6 +1,6 @@
 package com.example.pricetag.controllers;
 
-import com.example.pricetag.responses.CommonResponseDto;
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -1,9 +1,9 @@
 package com.example.pricetag.services;
 
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.ProductDto;
 import com.example.pricetag.dto.SubCategoryDto;
-import com.example.pricetag.responses.CommonResponseDto;
 import org.springframework.stereotype.Service;
 
 @Service

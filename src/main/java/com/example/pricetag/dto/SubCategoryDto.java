@@ -17,5 +17,4 @@ public class SubCategoryDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long categoryId;
-    // private CategoryDto category;
 }

@@ -1,11 +1,10 @@
 package com.example.pricetag.services;
 
-import org.springframework.http.ResponseEntity;
-
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.ImageDto;
-import com.example.pricetag.responses.CommonResponseDto;
+import org.springframework.http.ResponseEntity;
 
 public interface ImageService {
 
-  ResponseEntity<CommonResponseDto> uploadImage(ImageDto imageDto);
+    ResponseEntity<CommonResponseDto> uploadImage(ImageDto imageDto);
 }

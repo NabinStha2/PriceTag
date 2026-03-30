@@ -7,7 +7,6 @@ import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.AuthRepository;
 import com.example.pricetag.repository.UserRepo;
 import com.example.pricetag.responses.AuthResponseDto;
-import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

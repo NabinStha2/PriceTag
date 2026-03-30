@@ -31,7 +31,20 @@ import java.util.List;
 public class SecurityConfig {
 
     // Public endpoints that don't require authentication
-    private static final String[] PUBLIC_ENDPOINTS = {"/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/verify-otp", "/api/v1/auth/forgot-password", "/api/v1/auth/verify-forgot-password-otp", "/api/v1/auth/welcome", "/", "/actuator/health", "/swagger-ui/**", "/v3/api-docs/**"};
+    private static final String[] PUBLIC_ENDPOINTS = {
+            "/api/v1/auth/login",
+            "/api/v1/auth/register",
+            "/api/v1/auth/verify-otp",
+            "/api/v1/auth/forgot-password",
+            "/api/v1/auth/verify-forgot-password-otp",
+            "/api/v1/auth/welcome",
+            "/api/v1/jwt/generate",
+            "/api/v1/jwt/validate",
+            "/",
+            "/actuator/health",
+            "/swagger-ui/**",
+            "/v3/api-docs/**"
+    };
 
     // Admin-only endpoints
     private static final String[] ADMIN_ENDPOINTS = {"/api/v1/category/add", "/api/v1/subcategory/{categoryId}/add", "/api/v1/subcategory/edit", "/api/v1/product/category/{categoryId}/subcategory/{subCategoryId}/add", "/api/v1/image/upload"};
@@ -45,7 +58,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService, JwtFilter jwtFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService, JwtAuthenticationProvider jwtAuthenticationProvider, JwtFilter jwtFilter) throws Exception {
         ColorLogger.logInfo("Configuring security filter chain");
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -59,6 +72,7 @@ public class SecurityConfig {
                         .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider(passwordEncoder, userDetailsService))
+//                .authenticationProvider(jwtAuthenticationProvider)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -82,6 +96,12 @@ public class SecurityConfig {
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
         return daoAuthenticationProvider;
+    }
+
+    @Bean
+    public JwtAuthenticationProvider jwtAuthenticationProvider() {
+        ColorLogger.logInfo("I am inside JwtAuthenticationProvider");
+        return new JwtAuthenticationProvider();
     }
 
 

@@ -1,12 +1,12 @@
 package com.example.pricetag.services.impl;
 
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.entity.CartItem;
 import com.example.pricetag.entity.User;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.CartItemRepo;
 import com.example.pricetag.repository.OrderRepo;
 import com.example.pricetag.repository.ProductRepo;
-import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.AuthService;
 import com.example.pricetag.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;

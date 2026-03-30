@@ -1,16 +1,16 @@
 package com.example.pricetag.services.impl;
 
-import com.example.pricetag.dto.CategoryDto;
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.ProductDto;
 import com.example.pricetag.dto.SubCategoryDto;
+import com.example.pricetag.dto.category.CategoryDto;
 import com.example.pricetag.entity.*;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.CartItemRepo;
 import com.example.pricetag.repository.CategoryRepo;
 import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.SubCategoryRepo;
-import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.CloudinaryService;
 import com.example.pricetag.services.ProductService;
 import com.example.pricetag.utils.ColorLogger;
@@ -76,7 +76,7 @@ public class ProductServiceImpl implements ProductService {
                                 .name(newProduct.getName())
                                 .category(CategoryDto.builder()
                                         .id(newProduct.getCategory().getId())
-                                        .categoryName(newProduct.getCategory().getCategoryName())
+                                        .name(newProduct.getCategory().getCategoryName())
                                         .build())
                                 .subCategory(SubCategoryDto.builder()
                                         .id(newProduct.getSubCategory().getId())
@@ -123,7 +123,7 @@ public class ProductServiceImpl implements ProductService {
                         .description(product.getDescription())
                         .category(CategoryDto.builder()
                                 .id(product.getCategory().getId())
-                                .categoryName(product.getCategory().getCategoryName())
+                                .name(product.getCategory().getCategoryName())
                                 .createdAt(product.getCategory().getCreatedAt())
                                 .updatedAt(product.getCategory().getUpdatedAt())
                                 .build())

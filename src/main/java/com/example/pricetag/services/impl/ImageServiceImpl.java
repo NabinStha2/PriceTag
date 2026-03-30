@@ -1,12 +1,12 @@
 package com.example.pricetag.services.impl;
 
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.ImageDto;
 import com.example.pricetag.entity.Image;
 import com.example.pricetag.entity.Product;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.ImageRepo;
 import com.example.pricetag.repository.ProductRepo;
-import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.CloudinaryService;
 import com.example.pricetag.services.ImageService;
 import com.example.pricetag.utils.ColorLogger;

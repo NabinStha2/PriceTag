@@ -1,6 +1,7 @@
 package com.example.pricetag.services.impl;
 
 import com.example.pricetag.dto.*;
+import com.example.pricetag.dto.category.CategoryDto;
 import com.example.pricetag.entity.CartItem;
 import com.example.pricetag.entity.Product;
 import com.example.pricetag.entity.User;
@@ -10,7 +11,6 @@ import com.example.pricetag.repository.CartItemRepo;
 import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.UserRepo;
 import com.example.pricetag.repository.VariantRepo;
-import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.AuthService;
 import com.example.pricetag.services.CartItemService;
 import com.example.pricetag.utils.ColorLogger;
@@ -54,7 +54,7 @@ public class CartItemServiceImpl implements CartItemService {
                                 CategoryDto
                                         .builder()
                                         .id(product.getCategory().getId())
-                                        .categoryName(product.getCategory().getCategoryName())
+                                        .name(product.getCategory().getCategoryName())
                                         .build() : null)
                         .subCategory(product != null && product.getSubCategory() != null ?
                                 SubCategoryDto

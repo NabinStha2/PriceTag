@@ -1,8 +1,8 @@
 package com.example.pricetag.controllers;
 
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.ImageDto;
 import com.example.pricetag.repository.ImageRepo;
-import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

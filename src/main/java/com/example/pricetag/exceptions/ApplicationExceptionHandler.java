@@ -1,6 +1,6 @@
 package com.example.pricetag.exceptions;
 
-import ch.qos.logback.core.spi.ErrorCodes;
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.utils.ColorLogger;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,84 +10,85 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler {
+public class ApplicationExceptionHandler {
 
+    // Handle custom ApplicationException
     @ExceptionHandler(ApplicationException.class)
-    public ResponseEntity<?> handleApplicationException(
-            final ApplicationException exception, final HttpServletRequest request) {
-        var guid = UUID.randomUUID().toString();
-        ColorLogger.logError(
-                String.format("ApplicationException :: Error GUID=%s; error message: %s", guid, exception.getMessage()));
-        var response = new ApiErrorResponse(
-                guid,
-                exception.getErrorCode(),
-                exception.getMessage(),
-                exception.getHttpStatus().value(),
-                exception.getHttpStatus().name(),
-                request.getRequestURI(),
-                request.getMethod(),
-                LocalDateTime.now());
+    public ResponseEntity<CommonResponseDto<Void>> handleApplicationException(final ApplicationException exception, final HttpServletRequest request) {
+
+        String guid = UUID.randomUUID().toString();
+        ColorLogger.logError(String.format("ApplicationException :: GUID=%s; message=%s", guid, exception.getMessage()));
+
+        Map<String, Object> meta = new HashMap<>();
+        meta.put("guid", guid);
+        meta.put("path", request.getRequestURI());
+        meta.put("method", request.getMethod());
+        meta.put("timestamp", LocalDateTime.now());
+
+        CommonResponseDto<Void> response = CommonResponseDto.<Void>builder()
+                .message(exception.getMessage())
+                .success(false)
+                .status(exception.getHttpStatus().value())
+                .data(null)
+                .meta(meta)
+                .build();
+
         return new ResponseEntity<>(response, exception.getHttpStatus());
     }
 
-//    @ExceptionHandler(AuthenticationException.class)
-//    public ResponseEntity<?> handleUnAuthorizedException(
-//            final UnAuthorizedException exception, final HttpServletRequest request) {
-//        var guid = UUID.randomUUID().toString();
-//        ColorLogger.logError(
-//                String.format("UnAuthorizedException :: Error GUID=%s; error message: %s", guid, exception.getMessage()));
-//        var response = new ApiErrorResponse(
-//                guid,
-//                "Authentication failed",
-//                exception.getMessage(),
-//                HttpStatus.UNAUTHORIZED.value(),
-//                HttpStatus.UNAUTHORIZED.name(),
-//                request.getRequestURI(),
-//                request.getMethod(),
-//                LocalDateTime.now());
-//        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-//    }
+    // Handle JWT Expired Exception
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<CommonResponseDto<Void>> handleExpiredJwtException(final ExpiredJwtException exception, final HttpServletRequest request) {
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleUnknownException(
-            final Exception exception, final HttpServletRequest request) {
-        var guid = UUID.randomUUID().toString();
-        ColorLogger.logError(
-                String.format("Exception :: Error GUID=%s; error message: %s", guid, exception.getMessage()));
-        var response = new ApiErrorResponse(
-                guid,
-                ErrorCodes.EMPTY_MODEL_STACK,
-                exception.getMessage(),
-                HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.name(),
-                request.getRequestURI(),
-                request.getMethod(),
-                LocalDateTime.now());
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
+        String guid = UUID.randomUUID().toString();
+        ColorLogger.logError(String.format("ExpiredJwtException :: GUID=%s; message=%s", guid, exception.getMessage()));
 
-    @ExceptionHandler(value = {ExpiredJwtException.class})
-    public ResponseEntity<?> handleExpiredJwtException(ExpiredJwtException ex, HttpServletRequest request) {
-        // String requestUri = ((ServletWebRequest)
-        // request).getRequest().getRequestURI().toString();
-        var guid = UUID.randomUUID().toString();
-        var response = new ApiErrorResponse(
-                guid,
-                ErrorCodes.EMPTY_MODEL_STACK,
-                ex.getMessage(),
-                HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.name(),
-                request.getRequestURI(),
-                request.getMethod(),
-                LocalDateTime.now());
+        Map<String, Object> meta = new HashMap<>();
+        meta.put("guid", guid);
+        meta.put("path", request.getRequestURI());
+        meta.put("method", request.getMethod());
+        meta.put("timestamp", LocalDateTime.now());
+
+        CommonResponseDto<Void> response = CommonResponseDto.<Void>builder()
+                .message("JWT token has expired. Please login again.")
+                .success(false)
+                .status(HttpStatus.FORBIDDEN.value())
+                .data(null)
+                .meta(meta)
+                .build();
+
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
+    // Handle unknown exceptions
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<CommonResponseDto<Void>> handleUnknownException(final Exception exception, final HttpServletRequest request) {
+
+        String guid = UUID.randomUUID().toString();
+        ColorLogger.logError(String.format("UnknownException :: GUID=%s; message=%s", guid, exception.getMessage()));
+
+        Map<String, Object> meta = new HashMap<>();
+        meta.put("guid", guid);
+        meta.put("path", request.getRequestURI());
+        meta.put("method", request.getMethod());
+        meta.put("timestamp", LocalDateTime.now());
+
+        CommonResponseDto<Void> response = CommonResponseDto.<Void>builder()
+                .message("An unexpected error occurred. Please contact support.")
+                .success(false)
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .data(null)
+                .meta(meta)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

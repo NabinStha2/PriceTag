@@ -1,9 +1,9 @@
 package com.example.pricetag.controllers;
 
-import com.example.pricetag.dto.CategoryDto;
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.SubCategoryDto;
+import com.example.pricetag.dto.category.CategoryDto;
 import com.example.pricetag.exceptions.ApplicationException;
-import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.SubCategoryService;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,9 @@
 package com.example.pricetag.config;
 
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.services.JwtService;
 import com.example.pricetag.utils.ColorLogger;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -31,8 +33,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String userName = null;
@@ -44,8 +45,17 @@ public class JwtFilter extends OncePerRequestFilter {
                 userName = jwtService.extractUserName(token);
             } catch (ExpiredJwtException e) {
                 ColorLogger.logError(e.toString());
-                response.setStatus(HttpStatus.FORBIDDEN.value());
-                response.getWriter().write("Token Expired");
+                response.setContentType("application/json");
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                CommonResponseDto<String> responseDto = CommonResponseDto.<String>builder()
+                        .success(false)
+                        .message("Token expired")
+                        .status(HttpStatus.UNAUTHORIZED.value())
+                        .data(null)
+                        .build();
+//                ObjectMapper mapper = new ObjectMapper();
+//                response.getWriter().write(mapper.writeValueAsString(responseDto));
+                new ObjectMapper().writeValue(response.getOutputStream(), responseDto);
                 return;
             }
         }
@@ -54,8 +64,7 @@ public class JwtFilter extends OncePerRequestFilter {
             UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
             if (jwtService.validateToken(token, userDetails)) {
                 ColorLogger.logInfo("I am inside JwtFilter validateToken :: " + userDetails);
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null,
-                        userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

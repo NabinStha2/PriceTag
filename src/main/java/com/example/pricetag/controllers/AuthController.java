@@ -3,7 +3,6 @@ package com.example.pricetag.controllers;
 import com.example.pricetag.dto.*;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.responses.AuthResponseDto;
-import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.AuthService;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;

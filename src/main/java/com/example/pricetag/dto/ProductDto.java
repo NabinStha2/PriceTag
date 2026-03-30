@@ -1,5 +1,6 @@
 package com.example.pricetag.dto;
 
+import com.example.pricetag.dto.category.CategoryDto;
 import com.example.pricetag.entity.Image;
 import com.example.pricetag.entity.Variants;
 import lombok.*;

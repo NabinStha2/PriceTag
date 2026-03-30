@@ -1,10 +1,10 @@
 package com.example.pricetag.services.impl;
 
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.entity.Role;
 import com.example.pricetag.entity.User;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.UserRepo;
-import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.responses.UserResponse;
 import com.example.pricetag.services.UserService;
 import com.example.pricetag.utils.ColorLogger;

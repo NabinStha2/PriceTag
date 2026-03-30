@@ -1,19 +1,20 @@
 package com.example.pricetag.services;
 
-import com.example.pricetag.dto.CategoryDto;
-import com.example.pricetag.entity.Category;
-import com.example.pricetag.responses.CommonResponseDto;
+import com.example.pricetag.dto.CommonResponseDto;
+import com.example.pricetag.dto.category.CategoryDetailsDto;
+import com.example.pricetag.dto.category.CategoryDto;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public interface CategoryService {
-    CommonResponseDto getAllCategories();
+    CommonResponseDto<List<CategoryDto>> getAllCategories();
 
-    Category getByCategoryName();
+    CommonResponseDto<CategoryDetailsDto> getCategoryById(Long id);
 
-    Category createCategory(CategoryDto categoryDto);
+    CommonResponseDto<Void> createCategory(CategoryDto CategoryDto);
 
-
-    CommonResponseDto deleteCategory(Long categoryId);
+    CommonResponseDto<Void> deleteCategory(Long categoryId);
 
 }

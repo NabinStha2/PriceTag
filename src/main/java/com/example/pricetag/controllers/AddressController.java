@@ -1,7 +1,7 @@
 package com.example.pricetag.controllers;
 
 import com.example.pricetag.dto.AddressDto;
-import com.example.pricetag.responses.CommonResponseDto;
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.services.AddressService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

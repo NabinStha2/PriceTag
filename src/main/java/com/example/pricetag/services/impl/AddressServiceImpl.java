@@ -1,11 +1,11 @@
 package com.example.pricetag.services.impl;
 
 import com.example.pricetag.dto.AddressDto;
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.entity.Address;
 import com.example.pricetag.entity.User;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.UserRepo;
-import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.AddressService;
 import com.example.pricetag.services.AuthService;
 import org.springframework.dao.DataAccessException;

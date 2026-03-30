@@ -1,14 +1,14 @@
 package com.example.pricetag.services.impl;
 
-import com.example.pricetag.dto.CategoryDto;
+import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.SubCategoryDto;
+import com.example.pricetag.dto.category.CategoryDto;
 import com.example.pricetag.entity.Category;
 import com.example.pricetag.entity.SubCategory;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.repository.CategoryRepo;
 import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.SubCategoryRepo;
-import com.example.pricetag.responses.CommonResponseDto;
 import com.example.pricetag.services.SubCategoryService;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +71,8 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
             existingSubCategory.setSubCategoryName(subCategoryDto.getSubCategoryName());
             if (subCategoryDto.getCategoryId() != null) {
-                existingSubCategory.setCategory(categoryRepo.findById(subCategoryDto.getCategoryId()).orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND)));
+                existingSubCategory.setCategory(categoryRepo.findById(subCategoryDto.getCategoryId())
+                        .orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND)));
             }
 
             try {
