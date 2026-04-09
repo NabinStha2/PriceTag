@@ -1,6 +1,6 @@
-package com.example.pricetag.repository;
+package com.example.pricetag.features.category.repository;
 
-import com.example.pricetag.entity.Category;
+import com.example.pricetag.features.category.entity.Category;
 import jakarta.annotation.Nonnull;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,11 +15,12 @@ public interface CategoryRepo extends JpaRepository<Category, Long> {
     @EntityGraph(attributePaths = {"subCategories"})
     Optional<Category> findById(@Nonnull Long id);
 
+    Optional<Category> findByIdAndIsActiveTrue(@Nonnull Long id);
+
     Category findByCategoryName(String name);
 
     List<Category> findAllByIsActiveTrue();
 
     Boolean existsByCategoryName(String name);
-
 
 }

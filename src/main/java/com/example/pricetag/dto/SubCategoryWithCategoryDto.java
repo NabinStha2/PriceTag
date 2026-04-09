@@ -1,6 +1,6 @@
 package com.example.pricetag.dto;
 
-import com.example.pricetag.dto.category.CategoryDto;
+import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 public class SubCategoryWithCategoryDto {
     private Long id;
     private String subCategoryName;
-    private CategoryDto categoriesDto;
+    private CategoryResponseDto categoriesDto;
 }

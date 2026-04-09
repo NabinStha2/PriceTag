@@ -4,14 +4,18 @@ import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.ProductDto;
 import com.example.pricetag.dto.SubCategoryDto;
-import com.example.pricetag.dto.category.CategoryDto;
-import com.example.pricetag.entity.*;
+import com.example.pricetag.entity.CartItem;
+import com.example.pricetag.entity.Product;
+import com.example.pricetag.entity.SubCategory;
+import com.example.pricetag.entity.Variants;
 import com.example.pricetag.exceptions.ApplicationException;
+import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
+import com.example.pricetag.features.category.entity.Category;
+import com.example.pricetag.features.category.repository.CategoryRepo;
+import com.example.pricetag.features.cloudinary.service.CloudinaryService;
 import com.example.pricetag.repository.CartItemRepo;
-import com.example.pricetag.repository.CategoryRepo;
 import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.SubCategoryRepo;
-import com.example.pricetag.services.CloudinaryService;
 import com.example.pricetag.services.ProductService;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +78,7 @@ public class ProductServiceImpl implements ProductService {
                                 .variants(newProduct.getVariants())
                                 .description(newProduct.getDescription())
                                 .name(newProduct.getName())
-                                .category(CategoryDto.builder()
+                                .category(CategoryResponseDto.builder()
                                         .id(newProduct.getCategory().getId())
                                         .name(newProduct.getCategory().getCategoryName())
                                         .build())
@@ -82,7 +86,7 @@ public class ProductServiceImpl implements ProductService {
                                         .id(newProduct.getSubCategory().getId())
                                         .subCategoryName(newProduct.getSubCategory().getSubCategoryName())
                                         .build())
-                                .images(newProduct.getImages())
+//                                .images(newProduct.getImages())
                                 .createdAt(newProduct.getCreatedAt())
                                 .updatedAt(newProduct.getUpdatedAt())
                                 .build()))
@@ -121,7 +125,7 @@ public class ProductServiceImpl implements ProductService {
                         .productId(product.getId())
                         .name(product.getName())
                         .description(product.getDescription())
-                        .category(CategoryDto.builder()
+                        .category(CategoryResponseDto.builder()
                                 .id(product.getCategory().getId())
                                 .name(product.getCategory().getCategoryName())
                                 .createdAt(product.getCategory().getCreatedAt())
@@ -133,7 +137,7 @@ public class ProductServiceImpl implements ProductService {
                                 .createdAt(product.getSubCategory().getCreatedAt())
                                 .updatedAt(product.getSubCategory().getUpdatedAt())
                                 .build())
-                        .images(product.getImages())
+//                        .images(product.getImages())
                         .createdAt(product.getCreatedAt())
                         .updatedAt(product.getUpdatedAt())
                         .variants(product.getVariants())
@@ -225,9 +229,9 @@ public class ProductServiceImpl implements ProductService {
         Optional<Product> productOptional = productRepo.findById(productId);
         if (productOptional.isPresent()) {
             Product product = productOptional.get();
-            product.getImages()
-                    .forEach(image -> cloudinaryService.delete(image.getPublicId(), "pricetag/" + product.getCategory()
-                            .getCategoryName() + "/" + product.getSubCategory().getSubCategoryName()));
+//            product.getImages()
+//                    .forEach(image -> cloudinaryService.deleteFile(image.getPublicId(), "pricetag/" + product.getCategory()
+//                            .getCategoryName() + "/" + product.getSubCategory().getSubCategoryName()));
 
             CartItem existingCartItem = cartItemRepo.findByProductId(productId);
             if (existingCartItem != null) {

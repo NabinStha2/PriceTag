@@ -2,11 +2,11 @@ package com.example.pricetag.services.impl;
 
 import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.SubCategoryDto;
-import com.example.pricetag.dto.category.CategoryDto;
-import com.example.pricetag.entity.Category;
 import com.example.pricetag.entity.SubCategory;
 import com.example.pricetag.exceptions.ApplicationException;
-import com.example.pricetag.repository.CategoryRepo;
+import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
+import com.example.pricetag.features.category.entity.Category;
+import com.example.pricetag.features.category.repository.CategoryRepo;
 import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.SubCategoryRepo;
 import com.example.pricetag.services.SubCategoryService;
@@ -140,9 +140,9 @@ public class SubCategoryServiceImpl implements SubCategoryService {
     }
 
     @Override
-    public CommonResponseDto getSubCategoriesWithCategoryId(CategoryDto categoryDto) {
+    public CommonResponseDto getSubCategoriesWithCategoryId(CategoryResponseDto categoryResponseDto) {
 
-        Optional<Category> existingCategoryOptional = categoryRepo.findById(categoryDto.getId());
+        Optional<Category> existingCategoryOptional = categoryRepo.findById(categoryResponseDto.getId());
 
         if (existingCategoryOptional.isPresent()) {
             Category existingCategory = existingCategoryOptional.get();

@@ -2,8 +2,8 @@ package com.example.pricetag.controllers;
 
 import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.SubCategoryDto;
-import com.example.pricetag.dto.category.CategoryDto;
 import com.example.pricetag.exceptions.ApplicationException;
+import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import com.example.pricetag.services.SubCategoryService;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +41,9 @@ public class SubCategoryController {
     @GetMapping("/{categoryId}")
     public ResponseEntity<CommonResponseDto> getSubCategoriesWithCategoryId(
             @PathVariable(name = "categoryId") Long categoryId) throws ApplicationException {
-        CategoryDto categoryDto = new CategoryDto();
-        categoryDto.setId(categoryId);
-        return ResponseEntity.ok(subCategoryService.getSubCategoriesWithCategoryId(categoryDto));
+        CategoryResponseDto categoryResponseDto = new CategoryResponseDto();
+        categoryResponseDto.setId(categoryId);
+        return ResponseEntity.ok(subCategoryService.getSubCategoriesWithCategoryId(categoryResponseDto));
     }
 
     @DeleteMapping("/{subCategoryId}")

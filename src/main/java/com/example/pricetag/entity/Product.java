@@ -1,5 +1,6 @@
 package com.example.pricetag.entity;
 
+import com.example.pricetag.features.category.entity.Category;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,14 +19,14 @@ import java.util.List;
 @AllArgsConstructor
 //@JsonIgnoreProperties({"category", "subCategory"})
 @Table(name = "products",
-       indexes = {@Index(columnList = "subcategory_id",
-                         name = "idx_subcategory_id"
-       ), @Index(columnList = "category_id",
-                 name = "idx_category_id"
-       ), @Index(columnList = "brand",
-                 name = "idx_brand"
-       )},
-       uniqueConstraints = @UniqueConstraint(columnNames = {"slug"})
+        indexes = {@Index(columnList = "subcategory_id",
+                name = "idx_subcategory_id"
+        ), @Index(columnList = "category_id",
+                name = "idx_category_id"
+        ), @Index(columnList = "brand",
+                name = "idx_brand"
+        )},
+        uniqueConstraints = @UniqueConstraint(columnNames = {"slug"})
 )
 public class Product {
 
@@ -57,14 +58,14 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id",
-                nullable = false
+            nullable = false
     )
     private Category category;
 
     //    @JsonManagedReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id",
-                nullable = false
+            nullable = false
     )
     private SubCategory subCategory;
 
@@ -91,24 +92,24 @@ public class Product {
     @Column(name = "discounted_price")
     private BigDecimal discountedPrice;
 
-    @OneToMany(mappedBy = "product",
-               fetch = FetchType.LAZY,
-               cascade = CascadeType.ALL,
-               orphanRemoval = true
-    )
-    private List<Image> images = new ArrayList<>();
+//    @OneToMany(mappedBy = "product",
+//            fetch = FetchType.LAZY,
+//            cascade = CascadeType.ALL,
+//            orphanRemoval = true
+//    )
+//    private List<Image> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "product",
-               fetch = FetchType.LAZY,
-               cascade = CascadeType.ALL,
-               orphanRemoval = true
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
     )
     private List<Variants> variants = new ArrayList<>();
 
     @OneToMany(mappedBy = "product",
-               fetch = FetchType.LAZY,
-               cascade = CascadeType.ALL,
-               orphanRemoval = true
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
     )
     private List<RatingReview> ratingReviews = new ArrayList<>();
 

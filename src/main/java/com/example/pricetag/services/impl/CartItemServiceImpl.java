@@ -1,12 +1,12 @@
 package com.example.pricetag.services.impl;
 
 import com.example.pricetag.dto.*;
-import com.example.pricetag.dto.category.CategoryDto;
 import com.example.pricetag.entity.CartItem;
 import com.example.pricetag.entity.Product;
 import com.example.pricetag.entity.User;
 import com.example.pricetag.entity.Variants;
 import com.example.pricetag.exceptions.ApplicationException;
+import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import com.example.pricetag.repository.CartItemRepo;
 import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.UserRepo;
@@ -46,12 +46,12 @@ public class CartItemServiceImpl implements CartItemService {
                         .builder()
                         .name(product != null ? product.getName() : null)
                         .description(product != null ? product.getDescription() : null)
-                        .images(product != null ? product.getImages() : null)
+//                        .images(product != null ? product.getImages() : null)
                         .productId(product != null ? product.getId() : null)
                         .createdAt(product != null ? product.getCreatedAt() : null)
                         .updatedAt(product != null ? product.getUpdatedAt() : null)
                         .category(product != null && product.getCategory() != null ?
-                                CategoryDto
+                                CategoryResponseDto
                                         .builder()
                                         .id(product.getCategory().getId())
                                         .name(product.getCategory().getCategoryName())

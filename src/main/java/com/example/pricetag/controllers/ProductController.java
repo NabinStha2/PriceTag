@@ -4,8 +4,8 @@ import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.ProductDto;
 import com.example.pricetag.dto.SubCategoryDto;
-import com.example.pricetag.dto.category.CategoryDto;
 import com.example.pricetag.exceptions.ApplicationException;
+import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import com.example.pricetag.services.ProductService;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class ProductController {
             @PathVariable(name = "subCategoryId") Long subCategoryId,
             @RequestBody ProductDto productDto)
             throws ApplicationException {
-        productDto.setCategory(CategoryDto.builder().id(categoryId).build());
+        productDto.setCategory(CategoryResponseDto.builder().id(categoryId).build());
         productDto.setSubCategory(SubCategoryDto.builder().id(subCategoryId).build());
         System.out.println(productDto);
         return ResponseEntity.ok(productService.createProduct(productDto));

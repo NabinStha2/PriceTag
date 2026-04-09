@@ -1,8 +1,8 @@
 package com.example.pricetag.dto;
 
-import com.example.pricetag.dto.category.CategoryDto;
-import com.example.pricetag.entity.Image;
 import com.example.pricetag.entity.Variants;
+import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
+import com.example.pricetag.features.image.entity.Image;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ProductDto {
     private Long productId;
-    private CategoryDto category;
+    private CategoryResponseDto category;
     private SubCategoryDto subCategory;
     private String name;
     private String description;

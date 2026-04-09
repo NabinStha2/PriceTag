@@ -1,23 +1,22 @@
-package com.example.pricetag.dto.category;
+package com.example.pricetag.features.category.dto.response;
 
-import com.example.pricetag.dto.SubCategoryDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CategoryDetailsDto {
+public class CategoryResponseDto {
     private Long id;
     private String name;
-    private List<SubCategoryDto> subCategoryDtoList = new ArrayList<>();
+    private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
+
+
