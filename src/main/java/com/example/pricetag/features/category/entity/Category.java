@@ -1,6 +1,6 @@
 package com.example.pricetag.features.category.entity;
 
-import com.example.pricetag.entity.SubCategory;
+import com.example.pricetag.features.subcategory.entity.SubCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,21 +17,24 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 //@JsonIgnoreProperties(value = {"sub_categories"})
-@Table(name = "categories", indexes = {@Index(columnList = "name", name = "idx_name")})
+@Table(name = "categories",
+        indexes = {@Index(columnList = "name",
+                name = "idx_name")})
 public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name",
+            nullable = false)
     private String categoryName;
 
     @Column(name = "image_url")
     private String imageUrl;
 
-    //    @JsonManagedReference
-    @OneToMany(mappedBy = "category", orphanRemoval = true)
+    @OneToMany(mappedBy = "category",
+            orphanRemoval = true)
     private List<SubCategory> subCategories = new ArrayList<>();
 
     @Builder.Default
@@ -43,7 +46,8 @@ public class Category {
     private Boolean isDeleted = false;
 
     @CreationTimestamp
-    @Column(updatable = false, name = "created_at")
+    @Column(updatable = false,
+            name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp

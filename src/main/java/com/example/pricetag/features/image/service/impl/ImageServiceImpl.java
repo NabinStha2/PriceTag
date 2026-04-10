@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -36,6 +38,7 @@ public class ImageServiceImpl implements ImageService {
         CloudinaryUploadResponse cloudinaryUploadResponse = cloudinaryService.uploadFile(file, "pricetag/" + entityType
                 .name()
                 .toLowerCase() + "/" + entityName.toLowerCase());
+        registerRollbackCleanup(cloudinaryUploadResponse.getPublicId());
 
         log.debug("CloudinaryUploadResponse = {} :: {}", cloudinaryUploadResponse.getPublicId(),
                   cloudinaryUploadResponse.getUrl());
@@ -57,6 +60,28 @@ public class ImageServiceImpl implements ImageService {
                 .url(savedImage.getImageUrl())
                 .publicId(savedImage.getImagePublicId())
                 .build();
+    }
+
+    private void registerRollbackCleanup(String publicId) {
+        if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+            return;
+        }
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status != STATUS_ROLLED_BACK) {
+                    return;
+                }
+
+                try {
+                    cloudinaryService.deleteFile(publicId);
+                    log.info("Rolled back transaction, deleted uploaded image {}", publicId);
+                } catch (Exception ex) {
+                    log.error("Rollback cleanup failed for Cloudinary image {}: {}", publicId, ex.getMessage());
+                }
+            }
+        });
     }
 
     @Override

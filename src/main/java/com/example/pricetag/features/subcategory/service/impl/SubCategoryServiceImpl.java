@@ -1,20 +1,25 @@
-package com.example.pricetag.services.impl;
+package com.example.pricetag.features.subcategory.service.impl;
 
 import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.SubCategoryDto;
-import com.example.pricetag.entity.SubCategory;
+import com.example.pricetag.enums.ImageType;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.category.repository.CategoryRepo;
-import com.example.pricetag.repository.ProductRepo;
-import com.example.pricetag.repository.SubCategoryRepo;
-import com.example.pricetag.services.SubCategoryService;
+import com.example.pricetag.features.image.dto.response.ImageResponseDto;
+import com.example.pricetag.features.image.service.ImageService;
+import com.example.pricetag.features.subcategory.dto.request.CreateSubCategoryRequestDto;
+import com.example.pricetag.features.subcategory.entity.SubCategory;
+import com.example.pricetag.features.subcategory.mapper.SubCategoryMapper;
+import com.example.pricetag.features.subcategory.repository.SubCategoryRepo;
+import com.example.pricetag.features.subcategory.service.SubCategoryService;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,10 +33,13 @@ public class SubCategoryServiceImpl implements SubCategoryService {
     private SubCategoryRepo subCategoryRepo;
 
     @Autowired
-    private ProductRepo productRepo;
+    private ImageService imageService;
 
     @Autowired
     private CategoryRepo categoryRepo;
+
+    @Autowired
+    private SubCategoryMapper subCategoryMapper;
 
     @Override
     public CommonResponseDto getAllSubCategories() {
@@ -49,7 +57,9 @@ public class SubCategoryServiceImpl implements SubCategoryService {
             newSubCategoryDto.setSubCategoryName(sub.getSubCategoryName());
             newSubCategoryDto.setCreatedAt(sub.getCreatedAt());
             newSubCategoryDto.setUpdatedAt(sub.getUpdatedAt());
-            newSubCategoryDto.setCategoryId(sub.getCategory().getId());
+            newSubCategoryDto.setCategoryId(sub
+                                                    .getCategory()
+                                                    .getId());
 
             subCategoryDtoList.add(newSubCategoryDto);
         });
@@ -71,8 +81,11 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
             existingSubCategory.setSubCategoryName(subCategoryDto.getSubCategoryName());
             if (subCategoryDto.getCategoryId() != null) {
-                existingSubCategory.setCategory(categoryRepo.findById(subCategoryDto.getCategoryId())
-                        .orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND)));
+                existingSubCategory.setCategory(categoryRepo
+                                                        .findById(subCategoryDto.getCategoryId())
+                                                        .orElseThrow(() -> new ApplicationException("404",
+                                                                                                    "Category not found",
+                                                                                                    HttpStatus.NOT_FOUND)));
             }
 
             try {
@@ -94,49 +107,61 @@ public class SubCategoryServiceImpl implements SubCategoryService {
     }
 
     @Override
-    public CommonResponseDto createSubCategory(Long categoryId, SubCategoryDto subCategoryDto)
+    @Transactional
+    public CommonResponseDto<Void> createSubCategory(Long categoryId,
+                                                     CreateSubCategoryRequestDto createSubCategoryRequestDto)
             throws ApplicationException {
 
-        Optional<Category> existingCategoryOptional = categoryRepo.findById(categoryId);
+        Category existingCategory = categoryRepo
+                .findById(categoryId)
+                .orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND));
 
-        if (existingCategoryOptional.isPresent()) {
-            Category existingCategory = existingCategoryOptional.get();
-            Optional<SubCategory> subCategoryFilteredData = existingCategory.getSubCategories().stream()
-                    .filter(data -> {
-                        return data.getSubCategoryName().equals(subCategoryDto.getSubCategoryName());
-                    }).findFirst();
+        boolean exists = subCategoryRepo.existsByCategoryIdAndSubCategoryNameIgnoreCaseAndIsDeletedFalse(
+                existingCategory.getId(), createSubCategoryRequestDto.getSubCategoryName());
 
-            if (subCategoryFilteredData.isPresent()) {
-                throw new ApplicationException("409",
-                        "SubCategory already exists with this name inside this " + existingCategory.getCategoryName(),
-                        HttpStatus.CONFLICT);
-            }
-            SubCategory newSubCategory = SubCategory
-                    .builder()
-                    .category(existingCategory)
-                    .subCategoryName(subCategoryDto.getSubCategoryName())
-                    .build();
-            try {
-                if (newSubCategory != null) {
-                    SubCategory savedSubCategory = subCategoryRepo.save(newSubCategory);
-                    existingCategory.getSubCategories().add(savedSubCategory);
-                    categoryRepo.save(existingCategory);
+//        Optional<SubCategory> subCategoryFilteredData = existingCategory
+//                .getSubCategories()
+//                .stream()
+//                .filter(data -> data
+//                        .getSubCategoryName()
+//                        .equals(subCategoryDto.getSubCategoryName()))
+//                .findFirst();
 
-                    return CommonResponseDto
-                            .builder()
-                            .message("SubCategory created successfully")
-                            .success(true)
-                            .data(Map.of("results", savedSubCategory))
-                            .build();
-                } else {
-                    throw new ApplicationException("400", "SubCategory not created", HttpStatus.BAD_REQUEST);
-                }
-            } catch (DataAccessException ex) {
-                throw new ApplicationException("500", "Database error", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        } else {
-            throw new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND);
+        if (exists) {
+            throw new ApplicationException("409", "SubCategory already exists with this name inside this " +
+                                                  existingCategory.getCategoryName(), HttpStatus.CONFLICT);
         }
+
+        SubCategory newSubCategory = subCategoryMapper.mapCreateSubCategoryRequestDtoToSubCategory(
+                createSubCategoryRequestDto);
+        newSubCategory.setCategory(existingCategory);
+        SubCategory newSavedSubCategory = subCategoryRepo.save(newSubCategory);
+
+        if (createSubCategoryRequestDto.getFile() != null && !createSubCategoryRequestDto
+                .getFile()
+                .isEmpty()) {
+
+            ImageResponseDto imageResponseDto = imageService.saveSingleImage(newSavedSubCategory.getId(),
+                                                                             ImageType.SUBCATEGORY,
+                                                                             createSubCategoryRequestDto.getFile(),
+                                                                             createSubCategoryRequestDto.getSubCategoryName());
+
+            newSavedSubCategory.setImageUrl(imageResponseDto.getUrl());
+        }
+
+
+        // JPA already handles it from the owning side (SubCategory)
+//        existingCategory
+//                .getSubCategories()
+//                .add(savedSubCategory);
+//        categoryRepo.save(existingCategory);
+
+        return CommonResponseDto
+                .<Void>builder()
+                .message("SubCategory created successfully")
+                .success(true)
+                .status(HttpStatus.CREATED.value())
+                .build();
     }
 
     @Override
@@ -156,13 +181,15 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 //                newCategoryDto.setCategoryName(subCategory.getCategory().getCategoryName());
 
                 subCategoryDtoList.add(SubCategoryDto
-                        .builder()
-                        .id(subCategory.getId())
-                        .categoryId(subCategory.getCategory().getId())
-                        .subCategoryName(subCategory.getSubCategoryName())
-                        .createdAt(subCategory.getCreatedAt())
-                        .updatedAt(subCategory.getUpdatedAt())
-                        .build());
+                                               .builder()
+                                               .id(subCategory.getId())
+                                               .categoryId(subCategory
+                                                                   .getCategory()
+                                                                   .getId())
+                                               .subCategoryName(subCategory.getSubCategoryName())
+                                               .createdAt(subCategory.getCreatedAt())
+                                               .updatedAt(subCategory.getUpdatedAt())
+                                               .build());
             });
 
             return CommonResponseDto
