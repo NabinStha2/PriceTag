@@ -5,6 +5,7 @@ import com.example.pricetag.enums.ImageType;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.dto.request.CreateCategoryRequestDto;
 import com.example.pricetag.features.category.dto.request.UpdateCategoryImageRequestDto;
+import com.example.pricetag.features.category.dto.request.UpdateCategoryRequestDto;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import com.example.pricetag.features.category.dto.response.SingleCategoryDetailsResponseDto;
 import com.example.pricetag.features.category.entity.Category;
@@ -13,6 +14,7 @@ import com.example.pricetag.features.category.repository.CategoryRepo;
 import com.example.pricetag.features.category.service.CategoryService;
 import com.example.pricetag.features.image.dto.response.ImageResponseDto;
 import com.example.pricetag.features.image.service.ImageService;
+import com.example.pricetag.utils.ColorLogger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,10 +63,10 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CommonResponseDto<SingleCategoryDetailsResponseDto> getCategoryById(Long id) {
+    public CommonResponseDto<SingleCategoryDetailsResponseDto> getCategoryByIdWithSubCategories(Long id) {
 
         Category existingCategory = categoryRepo
-                .findById(id)
+                .findWithSubCategoriesById(id)
                 .orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND));
 
         SingleCategoryDetailsResponseDto SingleCategoryDetailsResponseDto = categoryMapper.mapCategoryToSingleCategoryDetailsResponseDto(
@@ -112,6 +114,28 @@ public class CategoryServiceImpl implements CategoryService {
                 .success(true)
                 .build();
 
+    }
+
+    @Override
+    public CommonResponseDto<Void> updateCategory(UpdateCategoryRequestDto updateCategoryRequestDto) {
+        Category existingCategory = categoryRepo
+                .findByIdAndIsActiveTrue(updateCategoryRequestDto.getId())
+                .orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND));
+
+        if (updateCategoryRequestDto.getCategoryName() != null) {
+            existingCategory.setCategoryName(updateCategoryRequestDto.getCategoryName());
+        } else {
+            ColorLogger.logError("Category name is empty");
+        }
+
+        categoryRepo.save(existingCategory);
+
+        return CommonResponseDto
+                .<Void>builder()
+                .message("Category updated successfully")
+                .status(HttpStatus.OK.value())
+                .success(true)
+                .build();
     }
 
 

@@ -11,11 +11,14 @@ import java.util.Optional;
 
 @Repository
 public interface CategoryRepo extends JpaRepository<Category, Long> {
-    @Override
     @EntityGraph(attributePaths = {"subCategories"})
-    Optional<Category> findById(@Nonnull Long id);
+    Optional<Category> findWithSubCategoriesById(
+            @Nonnull
+            Long id);
 
-    Optional<Category> findByIdAndIsActiveTrue(@Nonnull Long id);
+    Optional<Category> findByIdAndIsActiveTrue(
+            @Nonnull
+            Long id);
 
     Category findByCategoryName(String name);
 

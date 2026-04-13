@@ -4,6 +4,7 @@ import com.example.pricetag.features.subcategory.entity.SubCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -11,15 +12,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@DynamicUpdate
 @Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-//@JsonIgnoreProperties(value = {"sub_categories"})
 @Table(name = "categories",
         indexes = {@Index(columnList = "name",
-                name = "idx_name")})
+                name = "idx_category_name"), @Index(columnList = "name, is_deleted",
+                name = "idx_category_name_deleted")},
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 public class Category {
 
     @Id
@@ -27,13 +30,19 @@ public class Category {
     private Long id;
 
     @Column(name = "name",
-            nullable = false)
+            nullable = false,
+            length = 100)  // ✅ removed duplicate unique
     private String categoryName;
 
-    @Column(name = "image_url")
+    // Denormalized from Image entity for fast reads — kept in sync by ImageService
+    @Column(name = "image_url",
+            length = 500)               // ✅ safe URL length
     private String imageUrl;
 
+    @Builder.Default
     @OneToMany(mappedBy = "category",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
             orphanRemoval = true)
     private List<SubCategory> subCategories = new ArrayList<>();
 
@@ -53,11 +62,4 @@ public class Category {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    // Add @JsonIgnore here to prevent infinite recursion
-    // @JsonIgnore
-    // public List<SubCategory> getSubCategories() {
-    // return subCategories;
-    // }
-
 }

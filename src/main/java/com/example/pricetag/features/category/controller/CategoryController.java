@@ -5,6 +5,7 @@ import com.example.pricetag.enums.ImageType;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.dto.request.CreateCategoryRequestDto;
 import com.example.pricetag.features.category.dto.request.UpdateCategoryImageRequestDto;
+import com.example.pricetag.features.category.dto.request.UpdateCategoryRequestDto;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import com.example.pricetag.features.category.dto.response.SingleCategoryDetailsResponseDto;
 import com.example.pricetag.features.category.service.CategoryService;
@@ -29,9 +30,10 @@ public class CategoryController {
     }
 
     @GetMapping("/{categoryId}")
-    public ResponseEntity<CommonResponseDto<SingleCategoryDetailsResponseDto>> getCategoryById(
-            @PathVariable(name = "categoryId") Long categoryId) throws ApplicationException {
-        return ResponseEntity.ok(categoryService.getCategoryById(categoryId));
+    public ResponseEntity<CommonResponseDto<SingleCategoryDetailsResponseDto>> getCategoryByIdWithSubCategories(
+            @PathVariable(name = "categoryId")
+            Long categoryId) throws ApplicationException {
+        return ResponseEntity.ok(categoryService.getCategoryByIdWithSubCategories(categoryId));
     }
 
     @PostMapping("/add")
@@ -40,17 +42,31 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.createCategory(createCategoryRequestDto));
     }
 
+    @PatchMapping("/update/{categoryId}")
+    public ResponseEntity<CommonResponseDto<Void>> updateCategory(
+            @PathVariable(name = "categoryId")
+            Long categoryId,
+            @RequestBody
+            UpdateCategoryRequestDto updateCategoryRequestDto) throws ApplicationException {
+        updateCategoryRequestDto.setId(categoryId);
+        return ResponseEntity.ok(categoryService.updateCategory(updateCategoryRequestDto));
+    }
+
 
     @DeleteMapping("/{categoryId}")
-    public ResponseEntity<CommonResponseDto<Void>> deleteCategory(@PathVariable(name = "categoryId") Long categoryId)
-            throws ApplicationException {
+    public ResponseEntity<CommonResponseDto<Void>> deleteCategory(
+            @PathVariable(name = "categoryId")
+            Long categoryId) throws ApplicationException {
         return ResponseEntity.ok(categoryService.deleteCategory(categoryId));
     }
 
-    @PatchMapping(value = "/update/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/update/image",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CommonResponseDto<Void>> updateCategoryImage(
-            @RequestParam(name = "entityType") String entityType,
-            @ModelAttribute UpdateCategoryImageRequestDto updateCategoryImageRequestDto) throws ApplicationException {
+            @RequestParam(name = "entityType")
+            String entityType,
+            @ModelAttribute
+            UpdateCategoryImageRequestDto updateCategoryImageRequestDto) throws ApplicationException {
         ImageType imageType;
         try {
             imageType = ImageType.valueOf(entityType.toUpperCase());

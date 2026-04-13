@@ -47,9 +47,11 @@ public class SubCategory {
             fetch = FetchType.LAZY)
     private List<Product> products = new ArrayList<>();
 
+    @Builder.Default
     @Column(name = "is_active")
     private Boolean isActive = true;
 
+    @Builder.Default
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
