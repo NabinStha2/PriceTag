@@ -69,7 +69,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .findWithSubCategoriesById(id)
                 .orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND));
 
-        SingleCategoryDetailsResponseDto SingleCategoryDetailsResponseDto = categoryMapper.mapCategoryToSingleCategoryDetailsResponseDto(
+        SingleCategoryDetailsResponseDto singleCategoryDetailsResponseDto = categoryMapper.mapCategoryToSingleCategoryDetailsResponseDto(
                 existingCategory);
 
         return CommonResponseDto
@@ -77,7 +77,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .message("Category fetched successfully")
                 .status(HttpStatus.OK.value())
                 .success(true)
-                .data(SingleCategoryDetailsResponseDto)
+                .data(singleCategoryDetailsResponseDto)
                 .build();
 
     }
