@@ -1,5 +1,6 @@
 package com.example.pricetag.entity;
 
+import com.example.pricetag.features.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,14 +13,14 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 @Table(name = "variants",
-       uniqueConstraints = {@UniqueConstraint(columnNames = {"size", "color_id", "product_id"})},
-       indexes = {@Index(columnList = "product_id",
-                         name = "idx_product_id"
-       ), @Index(columnList = "sku",
-                 name = "idx_sku"
-       ), @Index(columnList = "color_id",
-                 name = "idx_color_id"
-       )}
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"size", "color_id", "product_id"})},
+        indexes = {@Index(columnList = "product_id",
+                name = "idx_product_id"
+        ), @Index(columnList = "sku",
+                name = "idx_sku"
+        ), @Index(columnList = "color_id",
+                name = "idx_color_id"
+        )}
 )
 public class Variants {
 
@@ -32,7 +33,7 @@ public class Variants {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "size_id",
-                nullable = false
+            nullable = false
     )
     private Size size;
 
@@ -42,7 +43,7 @@ public class Variants {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "color_id",
-                nullable = false
+            nullable = false
     )
     private Color color;
 
@@ -83,8 +84,8 @@ public class Variants {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id",
-                nullable = false,
-                referencedColumnName = "id"
+            nullable = false,
+            referencedColumnName = "id"
     )
     private Product product;
 

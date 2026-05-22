@@ -1,12 +1,12 @@
-package com.example.pricetag.controllers;
+package com.example.pricetag.features.product.controller;
 
 import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.PaginationDto;
-import com.example.pricetag.dto.ProductDto;
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
-import com.example.pricetag.services.ProductService;
+import com.example.pricetag.features.product.dto.ProductDto;
+import com.example.pricetag.features.product.service.ProductService;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +21,21 @@ public class ProductController {
 
     @PostMapping("/category/{categoryId}/subcategory/{subCategoryId}/add")
     public ResponseEntity<CommonResponseDto> createProduct(
-            @PathVariable(name = "categoryId") Long categoryId,
-            @PathVariable(name = "subCategoryId") Long subCategoryId,
-            @RequestBody ProductDto productDto)
+            @PathVariable(name = "categoryId")
+            Long categoryId,
+            @PathVariable(name = "subCategoryId")
+            Long subCategoryId,
+            @RequestBody
+            ProductDto productDto)
             throws ApplicationException {
-        productDto.setCategory(CategoryResponseDto.builder().id(categoryId).build());
-        productDto.setSubCategory(SubCategoryDto.builder().id(subCategoryId).build());
+        productDto.setCategory(CategoryResponseDto
+                                       .builder()
+                                       .id(categoryId)
+                                       .build());
+        productDto.setSubCategory(SubCategoryDto
+                                          .builder()
+                                          .id(subCategoryId)
+                                          .build());
         System.out.println(productDto);
         return ResponseEntity.ok(productService.createProduct(productDto));
     }
@@ -36,17 +45,21 @@ public class ProductController {
             @RequestParam(name = "page",
                     defaultValue = "1",
                     required = false
-            ) int page,
+            )
+            int page,
             @RequestParam(name = "limit",
                     defaultValue = "5",
                     required = false
-            ) int limit,
+            )
+            int limit,
             @RequestParam(name = "sortBy",
                     required = false
-            ) String sortBy,
+            )
+            String sortBy,
             @RequestParam(name = "order",
                     required = false
-            ) String order)
+            )
+            String order)
             throws ApplicationException {
         PaginationDto paginationDto = PaginationDto
                 .builder()
@@ -61,29 +74,35 @@ public class ProductController {
 
     @GetMapping("/{productId}")
     public ResponseEntity<CommonResponseDto> getSingleProduct(
-            @PathVariable(name = "productId") Long productId
-    )
+            @PathVariable(name = "productId")
+            Long productId
+                                                             )
             throws ApplicationException {
         return ResponseEntity.ok(productService.getSingleProduct(productId));
     }
 
     @GetMapping("/subcategory/{subCategoryId}")
     public ResponseEntity<CommonResponseDto> getProductsWithSubCategoryId(
-            @PathVariable(name = "subCategoryId") Long subCategoryId,
+            @PathVariable(name = "subCategoryId")
+            Long subCategoryId,
             @RequestParam(name = "page",
                     defaultValue = "1",
                     required = false
-            ) int page,
+            )
+            int page,
             @RequestParam(name = "limit",
                     defaultValue = "5",
                     required = false
-            ) int limit,
+            )
+            int limit,
             @RequestParam(name = "sortBy",
                     required = false
-            ) String sortBy,
+            )
+            String sortBy,
             @RequestParam(name = "order",
                     required = false
-            ) String order)
+            )
+            String order)
             throws ApplicationException {
         SubCategoryDto subCategoryDto = new SubCategoryDto();
         subCategoryDto.setId(subCategoryId);
@@ -100,24 +119,30 @@ public class ProductController {
 
     @GetMapping("/subcategory/{subCategoryId}/search")
     public ResponseEntity<CommonResponseDto> getSearchProductsWithSubCategoryId(
-            @PathVariable(name = "subCategoryId") Long subCategoryId,
+            @PathVariable(name = "subCategoryId")
+            Long subCategoryId,
             @RequestParam(name = "page",
                     defaultValue = "1",
                     required = false
-            ) int page,
+            )
+            int page,
             @RequestParam(name = "limit",
                     defaultValue = "5",
                     required = false
-            ) int limit,
+            )
+            int limit,
             @RequestParam(name = "sortBy",
                     required = false
-            ) String sortBy,
+            )
+            String sortBy,
             @RequestParam(name = "order",
                     required = false
-            ) String order,
+            )
+            String order,
             @RequestParam(name = "name",
                     required = false
-            ) String name)
+            )
+            String name)
             throws ApplicationException {
         SubCategoryDto subCategoryDto = new SubCategoryDto();
         subCategoryDto.setId(subCategoryId);
@@ -129,17 +154,24 @@ public class ProductController {
                 .order(order)
                 .build();
         ColorLogger.logInfo("paginationDto :: " + paginationDto.toString());
-        return ResponseEntity.ok(productService.getSearchProductsWithSubCategoryIdAndName(subCategoryDto, paginationDto, name));
+        return ResponseEntity.ok(
+                productService.getSearchProductsWithSubCategoryIdAndName(subCategoryDto, paginationDto, name));
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<CommonResponseDto> deleteProductById(@PathVariable(name = "productId") Long productId)
+    public ResponseEntity<CommonResponseDto> deleteProductById(
+            @PathVariable(name = "productId")
+            Long productId)
             throws ApplicationException {
         return ResponseEntity.ok(productService.deleteProductById(productId));
     }
 
     @PatchMapping("/{productId}")
-    public ResponseEntity<CommonResponseDto> editProduct(@PathVariable(name = "productId") Long productId, @RequestBody ProductDto productDto)
+    public ResponseEntity<CommonResponseDto> editProduct(
+            @PathVariable(name = "productId")
+            Long productId,
+            @RequestBody
+            ProductDto productDto)
             throws ApplicationException {
         productDto.setProductId(productId);
         return ResponseEntity.ok(productService.editProduct(productDto));

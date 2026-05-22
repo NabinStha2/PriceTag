@@ -10,4 +10,6 @@ public interface SubCategoryRepo extends JpaRepository<SubCategory, Long> {
 
     boolean existsByCategoryIdAndSubCategoryNameIgnoreCaseAndIsDeletedFalse(Long subCategoryId,
                                                                             String subCategoryName);
+
+    boolean existsSubCategoryById(Long id);
 }

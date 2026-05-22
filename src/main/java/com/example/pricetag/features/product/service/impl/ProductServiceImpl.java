@@ -1,24 +1,25 @@
-package com.example.pricetag.services.impl;
+package com.example.pricetag.features.product.service.impl;
 
 import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.PaginationDto;
-import com.example.pricetag.dto.ProductDto;
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.entity.CartItem;
-import com.example.pricetag.entity.Product;
 import com.example.pricetag.entity.Variants;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.category.repository.CategoryRepo;
 import com.example.pricetag.features.cloudinary.service.CloudinaryService;
+import com.example.pricetag.features.product.dto.ProductDto;
+import com.example.pricetag.features.product.dto.response.ProductResponseDto;
+import com.example.pricetag.features.product.entity.Product;
+import com.example.pricetag.features.product.mapper.ProductMapper;
+import com.example.pricetag.features.product.repository.ProductRepo;
+import com.example.pricetag.features.product.service.ProductService;
 import com.example.pricetag.features.subcategory.entity.SubCategory;
 import com.example.pricetag.features.subcategory.repository.SubCategoryRepo;
 import com.example.pricetag.repository.CartItemRepo;
-import com.example.pricetag.repository.ProductRepo;
-import com.example.pricetag.services.ProductService;
 import com.example.pricetag.utils.ColorLogger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,16 +35,23 @@ import java.util.Optional;
 @Service
 public class ProductServiceImpl implements ProductService {
 
-    @Autowired
-    private ProductRepo productRepo;
-    @Autowired
-    private CategoryRepo categoryRepo;
-    @Autowired
-    private SubCategoryRepo subCategoryRepo;
-    @Autowired
-    private CloudinaryService cloudinaryService;
-    @Autowired
-    private CartItemRepo cartItemRepo;
+    private final ProductRepo productRepo;
+    private final CategoryRepo categoryRepo;
+    private final SubCategoryRepo subCategoryRepo;
+    private final CloudinaryService cloudinaryService;
+    private final CartItemRepo cartItemRepo;
+    private final ProductMapper productMapper;
+
+    public ProductServiceImpl(ProductRepo productRepo, CategoryRepo categoryRepo, SubCategoryRepo subCategoryRepo,
+                              CloudinaryService cloudinaryService, CartItemRepo cartItemRepo,
+                              ProductMapper productMapper) {
+        this.productRepo = productRepo;
+        this.categoryRepo = categoryRepo;
+        this.subCategoryRepo = subCategoryRepo;
+        this.cloudinaryService = cloudinaryService;
+        this.cartItemRepo = cartItemRepo;
+        this.productMapper = productMapper;
+    }
 
     private static Product createNewProduct(ProductDto productDto, SubCategory filteredSubCategory, Category category) {
         Product newProduct = new Product();
@@ -135,10 +143,10 @@ public class ProductServiceImpl implements ProductService {
                                                paginationDto
                                                        .getOrder()
                                                        .equals("asc") ? Sort
-                                                       .by(paginationDto.getSortBy())
-                                                       .ascending() : Sort
-                                                       .by(paginationDto.getSortBy())
-                                                       .descending());
+                                                                        .by(paginationDto.getSortBy())
+                                                                        .ascending() : Sort
+                                                                                       .by(paginationDto.getSortBy())
+                                                                                       .descending());
 
             int productCount = productRepo
                     .findAll()
@@ -243,37 +251,23 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public CommonResponseDto getProductsWithSubCategoryId(SubCategoryDto subCategoryDto, PaginationDto paginationDto)
+    public CommonResponseDto<List<ProductResponseDto>> getProductsWithSubCategoryId(SubCategoryDto subCategoryDto,
+                                                                                    PaginationDto paginationDto)
             throws ApplicationException {
-
         Pageable pageable = PageRequest.of(paginationDto.getPage() - 1, paginationDto.getLimit());
 
-        Optional<SubCategory> existingSubCategoryOptional = subCategoryRepo.findById(subCategoryDto.getId());
-
-
-        if (existingSubCategoryOptional.isPresent()) {
-//            SubCategory existingSubCategory = existingSubCategoryOptional.get();
-//            ColorLogger.logInfo("existingSubCategory :: " + existingSubCategory.getSubCategoryName());
-            List<Product> product = productRepo.findAllBySubCategoryId(subCategoryDto.getId(), pageable);
-
-            int productCount = productRepo
-                    .findAllBySubCategoryId(subCategoryDto.getId(), null)
-                    .size();
-
-//            product.forEach(d -> ColorLogger.logInfo("product :: " + d.getId()));
+        if (subCategoryRepo.existsSubCategoryById(subCategoryDto.getId())) {
+            List<Product> existingProducts = productRepo.findAllBySubCategoryIdAndIsActiveTrue(subCategoryDto.getId(),
+                                                                                               pageable);
+            List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
+                    existingProducts);
 
             return CommonResponseDto
-                    .builder()
-                    .message("Product fetch Successfully")
-                    .data(Map.of("results", product, "pagination",
-                                 Map.of("totalItems", productCount, "itemsPerPage", paginationDto.getLimit(),
-                                        "totalPages", (int) Math.ceil((double) productCount / paginationDto.getLimit()),
-                                        "currentPage", paginationDto.getPage(), "hasNext", paginationDto.getPage() <
-                                                                                           (int) Math.ceil(
-                                                                                                   (double) productCount /
-                                                                                                   paginationDto.getLimit()),
-                                        "hasPrevious", paginationDto.getPage() > 1)))
+                    .<List<ProductResponseDto>>builder()
+                    .message("Products fetch Successfully")
+                    .data(productResponseDtoList)
                     .success(true)
+                    .status(HttpStatus.OK.value())
                     .build();
         } else {
             throw new ApplicationException("404", "Sub Category not found", HttpStatus.NOT_FOUND);

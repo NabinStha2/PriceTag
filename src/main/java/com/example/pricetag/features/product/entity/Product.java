@@ -1,5 +1,7 @@
-package com.example.pricetag.entity;
+package com.example.pricetag.features.product.entity;
 
+import com.example.pricetag.entity.RatingReview;
+import com.example.pricetag.entity.Variants;
 import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.subcategory.entity.SubCategory;
 import jakarta.persistence.*;
@@ -18,7 +20,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-//@JsonIgnoreProperties({"category", "subCategory"})
 @Table(name = "products",
         indexes = {@Index(columnList = "subcategory_id",
                 name = "idx_subcategory_id"
@@ -63,16 +64,17 @@ public class Product {
     )
     private Category category;
 
-    //    @JsonManagedReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id",
             nullable = false
     )
     private SubCategory subCategory;
 
+    @Builder.Default
     @Column(name = "is_active")
     private Boolean isActive = true;
 
+    @Builder.Default
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
@@ -92,13 +94,6 @@ public class Product {
 
     @Column(name = "discounted_price")
     private BigDecimal discountedPrice;
-
-//    @OneToMany(mappedBy = "product",
-//            fetch = FetchType.LAZY,
-//            cascade = CascadeType.ALL,
-//            orphanRemoval = true
-//    )
-//    private List<Image> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "product",
             fetch = FetchType.LAZY,

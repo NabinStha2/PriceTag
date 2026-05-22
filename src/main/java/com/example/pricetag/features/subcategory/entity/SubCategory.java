@@ -1,7 +1,7 @@
 package com.example.pricetag.features.subcategory.entity;
 
-import com.example.pricetag.entity.Product;
 import com.example.pricetag.features.category.entity.Category;
+import com.example.pricetag.features.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

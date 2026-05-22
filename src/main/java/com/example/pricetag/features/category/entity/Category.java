@@ -19,10 +19,15 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "categories",
-        indexes = {@Index(columnList = "name",
-                name = "idx_category_name"), @Index(columnList = "name, is_deleted",
-                name = "idx_category_name_deleted")},
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
+        indexes = {
+                @Index(name = "idx_category_name",
+                        columnList = "name"),
+                @Index(name = "idx_category_name_deleted",
+                        columnList = "name, is_deleted"),
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"name"})
+        })
 public class Category {
 
     @Id

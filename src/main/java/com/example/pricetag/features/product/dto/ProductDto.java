@@ -1,5 +1,6 @@
-package com.example.pricetag.dto;
+package com.example.pricetag.features.product.dto;
 
+import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.entity.Variants;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import com.example.pricetag.features.image.entity.Image;

@@ -1,14 +1,18 @@
 package com.example.pricetag.services.impl;
 
-import com.example.pricetag.dto.*;
+import com.example.pricetag.dto.AddCartItemDto;
+import com.example.pricetag.dto.CartItemDto;
+import com.example.pricetag.dto.CommonResponseDto;
+import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.entity.CartItem;
-import com.example.pricetag.entity.Product;
 import com.example.pricetag.entity.User;
 import com.example.pricetag.entity.Variants;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
+import com.example.pricetag.features.product.dto.ProductDto;
+import com.example.pricetag.features.product.entity.Product;
+import com.example.pricetag.features.product.repository.ProductRepo;
 import com.example.pricetag.repository.CartItemRepo;
-import com.example.pricetag.repository.ProductRepo;
 import com.example.pricetag.repository.UserRepo;
 import com.example.pricetag.repository.VariantRepo;
 import com.example.pricetag.services.AuthService;
@@ -28,7 +32,8 @@ public class CartItemServiceImpl implements CartItemService {
     private final AuthService authService;
     private final VariantRepo variantRepo;
 
-    public CartItemServiceImpl(CartItemRepo cartItemRepo, UserRepo userRepo, ProductRepo productRepo, AuthService authService, VariantRepo variantRepo) {
+    public CartItemServiceImpl(CartItemRepo cartItemRepo, UserRepo userRepo, ProductRepo productRepo,
+                               AuthService authService, VariantRepo variantRepo) {
         this.cartItemRepo = cartItemRepo;
         this.userRepo = userRepo;
         this.productRepo = productRepo;
@@ -43,26 +48,34 @@ public class CartItemServiceImpl implements CartItemService {
                 .builder()
                 .id(newCartItem.getId())
                 .product(ProductDto
-                        .builder()
-                        .name(product != null ? product.getName() : null)
-                        .description(product != null ? product.getDescription() : null)
+                                 .builder()
+                                 .name(product != null ? product.getName() : null)
+                                 .description(product != null ? product.getDescription() : null)
 //                        .images(product != null ? product.getImages() : null)
-                        .productId(product != null ? product.getId() : null)
-                        .createdAt(product != null ? product.getCreatedAt() : null)
-                        .updatedAt(product != null ? product.getUpdatedAt() : null)
-                        .category(product != null && product.getCategory() != null ?
-                                CategoryResponseDto
-                                        .builder()
-                                        .id(product.getCategory().getId())
-                                        .name(product.getCategory().getCategoryName())
-                                        .build() : null)
-                        .subCategory(product != null && product.getSubCategory() != null ?
-                                SubCategoryDto
-                                        .builder()
-                                        .id(product.getSubCategory().getId())
-                                        .subCategoryName(product.getSubCategory().getSubCategoryName())
-                                        .build() : null)
-                        .build())
+                                 .productId(product != null ? product.getId() : null)
+                                 .createdAt(product != null ? product.getCreatedAt() : null)
+                                 .updatedAt(product != null ? product.getUpdatedAt() : null)
+                                 .category(product != null && product.getCategory() != null ?
+                                           CategoryResponseDto
+                                           .builder()
+                                           .id(product
+                                               .getCategory()
+                                               .getId())
+                                           .name(product
+                                                 .getCategory()
+                                                 .getCategoryName())
+                                           .build() : null)
+                                 .subCategory(product != null && product.getSubCategory() != null ?
+                                              SubCategoryDto
+                                              .builder()
+                                              .id(product
+                                                  .getSubCategory()
+                                                  .getId())
+                                              .subCategoryName(product
+                                                               .getSubCategory()
+                                                               .getSubCategoryName())
+                                              .build() : null)
+                                 .build())
                 .user(existingUser)
                 .quantity(newCartItem.getQuantity())
                 .createdAt(newCartItem.getCreatedAt())
@@ -82,7 +95,10 @@ public class CartItemServiceImpl implements CartItemService {
                 .getCart()
                 .getCartItems()
                 .stream()
-                .sorted(Comparator.comparing(CartItem::getCreatedAt).reversed()).toList()
+                .sorted(Comparator
+                                .comparing(CartItem::getCreatedAt)
+                                .reversed())
+                .toList()
                 .forEach(cartItem -> {
                     if (cartItem.getTotalPrice() == null) {
                         listOfCartItemDto.add(buildCartItemDto(cartItem, existingUser));
@@ -111,11 +127,17 @@ public class CartItemServiceImpl implements CartItemService {
         Optional<Product> existingProduct = productRepo.findById(addCartItemDto.getProductId());
         if (existingProduct.isPresent()) {
             // Check if the variant exists within the product
-            Optional<Variants> variantPresent = existingProduct.get().getVariants().stream()
-                    .filter(variant -> variant.getId().equals(addCartItemDto.getVariantId()))
+            Optional<Variants> variantPresent = existingProduct
+                    .get()
+                    .getVariants()
+                    .stream()
+                    .filter(variant -> variant
+                            .getId()
+                            .equals(addCartItemDto.getVariantId()))
                     .findFirst();
             if (variantPresent.isEmpty()) {
-                throw new ApplicationException("404", "Variant not found inside given product id", HttpStatus.NOT_FOUND);
+                throw new ApplicationException("404", "Variant not found inside given product id",
+                                               HttpStatus.NOT_FOUND);
             }
 
             // Check if the variant exists
@@ -125,18 +147,33 @@ public class CartItemServiceImpl implements CartItemService {
             }
 
             // Check if the requested quantity is available
-            if (addCartItemDto.getQuantity() > existingVariant.get().getStockQuantity()) {
+            if (addCartItemDto.getQuantity() > existingVariant
+                    .get()
+                    .getStockQuantity()) {
                 throw new ApplicationException("400", "Product quantity not available", HttpStatus.BAD_REQUEST);
             }
 
             // Get the list of existing cart items for the user
-            List<CartItem> listOfCartItem = existingUser.getCart().getCartItems();
+            List<CartItem> listOfCartItem = existingUser
+                    .getCart()
+                    .getCartItems();
 
             // Check if the cart item already exists
-            Optional<CartItem> filteredCartItem = listOfCartItem.stream()
-                    .filter(cartItem -> cartItem.getProduct().getId().equals(existingProduct.get().getId())
-                            && cartItem.getTotalPrice() == null
-                            && cartItem.getVariant().getId().equals(existingVariant.get().getId()))
+            Optional<CartItem> filteredCartItem = listOfCartItem
+                    .stream()
+                    .filter(cartItem -> cartItem
+                                                .getProduct()
+                                                .getId()
+                                                .equals(existingProduct
+                                                                .get()
+                                                                .getId())
+                                        && cartItem.getTotalPrice() == null
+                                        && cartItem
+                                                .getVariant()
+                                                .getId()
+                                                .equals(existingVariant
+                                                                .get()
+                                                                .getId()))
                     .findFirst();
 
             if (filteredCartItem.isPresent()) {
@@ -162,7 +199,10 @@ public class CartItemServiceImpl implements CartItemService {
                 CartItem savedCartItem = cartItemRepo.save(newCartItem);
 
                 // Update user cart items and save user
-                existingUser.getCart().getCartItems().add(savedCartItem);
+                existingUser
+                        .getCart()
+                        .getCartItems()
+                        .add(savedCartItem);
                 userRepo.save(existingUser);
 
                 // Return success response
@@ -183,14 +223,26 @@ public class CartItemServiceImpl implements CartItemService {
     public CommonResponseDto deleteCartItem(Long cartItemId) {
         User existingUser = authService.getUser();
 
-        List<CartItem> listOfCartItems = existingUser.getCart().getCartItems();
+        List<CartItem> listOfCartItems = existingUser
+                .getCart()
+                .getCartItems();
 
-        Optional<CartItem> filteredCartItem = existingUser.getCart().getCartItems().stream().filter(cartItem -> {
-            return cartItem.getId().equals(cartItemId);
-        }).findFirst();
+        Optional<CartItem> filteredCartItem = existingUser
+                .getCart()
+                .getCartItems()
+                .stream()
+                .filter(cartItem -> {
+                    return cartItem
+                            .getId()
+                            .equals(cartItemId);
+                })
+                .findFirst();
 
         if (filteredCartItem.isPresent()) {
-            existingUser.getCart().getCartItems().remove(filteredCartItem.get());
+            existingUser
+                    .getCart()
+                    .getCartItems()
+                    .remove(filteredCartItem.get());
             cartItemRepo.delete(filteredCartItem.get());
             userRepo.save(existingUser);
 
@@ -201,7 +253,8 @@ public class CartItemServiceImpl implements CartItemService {
                     .success(true)
                     .build();
         } else {
-            throw new ApplicationException("404", "Delete of cart item id doesn't present inside user cart", HttpStatus.NOT_FOUND);
+            throw new ApplicationException("404", "Delete of cart item id doesn't present inside user cart",
+                                           HttpStatus.NOT_FOUND);
         }
     }
 

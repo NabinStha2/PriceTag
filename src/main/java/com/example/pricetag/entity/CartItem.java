@@ -1,5 +1,6 @@
 package com.example.pricetag.entity;
 
+import com.example.pricetag.features.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,17 +11,17 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "cart_items",
-       indexes = {@Index(name = "idx_cart_id",
-                         columnList = "cart_id",
-                         unique = true
-       ), @Index(name = "idx_product_id",
-                 columnList = "product_id",
-                 unique = true
-       ), @Index(name = "idx_variant_id",
-                 columnList = "variant_id",
-                 unique = true
-       )},
-       uniqueConstraints = {@UniqueConstraint(columnNames = {"cart_id", "product_id", "variant_id"})}
+        indexes = {@Index(name = "idx_cart_id",
+                columnList = "cart_id",
+                unique = true
+        ), @Index(name = "idx_product_id",
+                columnList = "product_id",
+                unique = true
+        ), @Index(name = "idx_variant_id",
+                columnList = "variant_id",
+                unique = true
+        )},
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"cart_id", "product_id", "variant_id"})}
 )
 @Builder
 @Getter
@@ -34,19 +35,19 @@ public class CartItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id",
-                nullable = false
+            nullable = false
     )
     private Cart cart;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",
-                nullable = false
+            nullable = false
     )
     private User user;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id",
-                nullable = false
+            nullable = false
     )
     private Product product;
 

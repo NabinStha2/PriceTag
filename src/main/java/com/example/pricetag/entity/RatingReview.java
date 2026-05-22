@@ -1,5 +1,6 @@
 package com.example.pricetag.entity;
 
+import com.example.pricetag.features.product.entity.Product;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "rating_review",
-       uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "product_id"})}
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "product_id"})}
 )
 public class RatingReview {
     @Id
@@ -39,13 +40,13 @@ public class RatingReview {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",
-                referencedColumnName = "id"
+            referencedColumnName = "id"
     )
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id",
-                referencedColumnName = "id"
+            referencedColumnName = "id"
     )
     private Product product;
 
