@@ -28,6 +28,6 @@ public class ProductResponseDto {
     private Integer totalReview;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private CategoryResponseDto categoryResponseDto;
-    private SubCategoryDto subCategoryDto;
+    private CategoryResponseDto category;
+    private SubCategoryDto subCategory;
 }

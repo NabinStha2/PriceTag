@@ -1,6 +1,7 @@
 package com.example.pricetag.features.product.service.impl;
 
 import com.example.pricetag.dto.CommonResponseDto;
+import com.example.pricetag.dto.PaginatedResponseDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.entity.CartItem;
@@ -20,7 +21,10 @@ import com.example.pricetag.features.subcategory.entity.SubCategory;
 import com.example.pricetag.features.subcategory.repository.SubCategoryRepo;
 import com.example.pricetag.repository.CartItemRepo;
 import com.example.pricetag.utils.ColorLogger;
+import com.example.pricetag.utils.PageableBuilder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,6 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepo productRepo;
@@ -41,17 +46,6 @@ public class ProductServiceImpl implements ProductService {
     private final CloudinaryService cloudinaryService;
     private final CartItemRepo cartItemRepo;
     private final ProductMapper productMapper;
-
-    public ProductServiceImpl(ProductRepo productRepo, CategoryRepo categoryRepo, SubCategoryRepo subCategoryRepo,
-                              CloudinaryService cloudinaryService, CartItemRepo cartItemRepo,
-                              ProductMapper productMapper) {
-        this.productRepo = productRepo;
-        this.categoryRepo = categoryRepo;
-        this.subCategoryRepo = subCategoryRepo;
-        this.cloudinaryService = cloudinaryService;
-        this.cartItemRepo = cartItemRepo;
-        this.productMapper = productMapper;
-    }
 
     private static Product createNewProduct(ProductDto productDto, SubCategory filteredSubCategory, Category category) {
         Product newProduct = new Product();
@@ -62,6 +56,29 @@ public class ProductServiceImpl implements ProductService {
         newProduct.setVariants(productDto.getVariants());
 
         return newProduct;
+    }
+
+    @Override
+    public CommonResponseDto<List<ProductResponseDto>> getProductsWithSubCategoryId(SubCategoryDto subCategoryDto,
+                                                                                    PaginationDto paginationDto) {
+        Pageable pageable = PageableBuilder.buildPageable(paginationDto);
+        if (subCategoryRepo.existsSubCategoryById(subCategoryDto.getId())) {
+            Page<Product> existingProducts = productRepo.findAllBySubCategoryIdAndIsActiveTrue(subCategoryDto.getId(),
+                                                                                               pageable);
+            List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
+                    existingProducts.getContent());
+
+            return CommonResponseDto
+                    .<List<ProductResponseDto>>builder()
+                    .message("Products fetch Successfully")
+                    .data(productResponseDtoList)
+                    .pagination(PaginatedResponseDto.from(existingProducts))
+                    .success(true)
+                    .status(HttpStatus.OK.value())
+                    .build();
+        } else {
+            throw new ApplicationException("404", "Sub Category not found", HttpStatus.NOT_FOUND);
+        }
     }
 
     @Override
@@ -250,29 +267,6 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    @Override
-    public CommonResponseDto<List<ProductResponseDto>> getProductsWithSubCategoryId(SubCategoryDto subCategoryDto,
-                                                                                    PaginationDto paginationDto)
-            throws ApplicationException {
-        Pageable pageable = PageRequest.of(paginationDto.getPage() - 1, paginationDto.getLimit());
-
-        if (subCategoryRepo.existsSubCategoryById(subCategoryDto.getId())) {
-            List<Product> existingProducts = productRepo.findAllBySubCategoryIdAndIsActiveTrue(subCategoryDto.getId(),
-                                                                                               pageable);
-            List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
-                    existingProducts);
-
-            return CommonResponseDto
-                    .<List<ProductResponseDto>>builder()
-                    .message("Products fetch Successfully")
-                    .data(productResponseDtoList)
-                    .success(true)
-                    .status(HttpStatus.OK.value())
-                    .build();
-        } else {
-            throw new ApplicationException("404", "Sub Category not found", HttpStatus.NOT_FOUND);
-        }
-    }
 
     @Override
     public CommonResponseDto getSearchProductsWithSubCategoryIdAndName(SubCategoryDto subCategoryDto,

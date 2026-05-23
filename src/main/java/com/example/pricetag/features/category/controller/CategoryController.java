@@ -25,29 +25,28 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping("/")
-    public ResponseEntity<CommonResponseDto<List<CategoryResponseDto>>> getAllCategories() throws ApplicationException {
+    public ResponseEntity<CommonResponseDto<List<CategoryResponseDto>>> getAllCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
     @GetMapping("/{categoryId}")
     public ResponseEntity<CommonResponseDto<SingleCategoryDetailsResponseDto>> getCategoryByIdWithSubCategories(
-            @PathVariable(name = "categoryId")
-            Long categoryId) throws ApplicationException {
+            @PathVariable
+            Long categoryId) {
         return ResponseEntity.ok(categoryService.getCategoryByIdWithSubCategories(categoryId));
     }
 
     @PostMapping("/add")
-    public ResponseEntity<CommonResponseDto<Void>> createCategory(CreateCategoryRequestDto createCategoryRequestDto)
-            throws ApplicationException {
+    public ResponseEntity<CommonResponseDto<Void>> createCategory(CreateCategoryRequestDto createCategoryRequestDto) {
         return ResponseEntity.ok(categoryService.createCategory(createCategoryRequestDto));
     }
 
     @PatchMapping("/update/{categoryId}")
     public ResponseEntity<CommonResponseDto<Void>> updateCategory(
-            @PathVariable(name = "categoryId")
+            @PathVariable
             Long categoryId,
             @RequestBody
-            UpdateCategoryRequestDto updateCategoryRequestDto) throws ApplicationException {
+            UpdateCategoryRequestDto updateCategoryRequestDto) {
         updateCategoryRequestDto.setId(categoryId);
         return ResponseEntity.ok(categoryService.updateCategory(updateCategoryRequestDto));
     }
@@ -55,8 +54,8 @@ public class CategoryController {
 
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<CommonResponseDto<Void>> deleteCategory(
-            @PathVariable(name = "categoryId")
-            Long categoryId) throws ApplicationException {
+            @PathVariable
+            Long categoryId) {
         return ResponseEntity.ok(categoryService.deleteCategory(categoryId));
     }
 
@@ -66,7 +65,7 @@ public class CategoryController {
             @RequestParam(name = "entityType")
             String entityType,
             @ModelAttribute
-            UpdateCategoryImageRequestDto updateCategoryImageRequestDto) throws ApplicationException {
+            UpdateCategoryImageRequestDto updateCategoryImageRequestDto) {
         ImageType imageType;
         try {
             imageType = ImageType.valueOf(entityType.toUpperCase());

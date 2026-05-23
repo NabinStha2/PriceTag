@@ -7,6 +7,7 @@ import com.example.pricetag.features.subcategory.entity.SubCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@DynamicUpdate
 @Builder
 @Getter
 @Setter
@@ -22,14 +24,10 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name = "products",
         indexes = {@Index(columnList = "subcategory_id",
-                name = "idx_subcategory_id"
-        ), @Index(columnList = "category_id",
-                name = "idx_category_id"
-        ), @Index(columnList = "brand",
-                name = "idx_brand"
-        )},
-        uniqueConstraints = @UniqueConstraint(columnNames = {"slug"})
-)
+                name = "idx_subcategory_id"), @Index(columnList = "category_id",
+                name = "idx_category_id"), @Index(columnList = "brand",
+                name = "idx_brand")},
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"slug"})})
 public class Product {
 
     @Id
@@ -37,21 +35,17 @@ public class Product {
     private Long id;
 
     @Column(name = "name",
-            nullable = false
-    )
+            nullable = false)
     private String name;
 
     // SEO-friendly URL slug
-    @Column(nullable = false,
-            unique = true
-    )
+    @Column(nullable = false)
     private String slug;  // Example: nike-air-max-red
 
     // Long description (HTML friendly)
     @Column(name = "description",
             nullable = false,
-            columnDefinition = "longtext"
-    )
+            columnDefinition = "longtext")
     private String description;
 
     // Short description for listing
@@ -60,14 +54,12 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id",
-            nullable = false
-    )
+            nullable = false)
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id",
-            nullable = false
-    )
+            nullable = false)
     private SubCategory subCategory;
 
     @Builder.Default
@@ -88,8 +80,7 @@ public class Product {
     private Integer totalReview = 0;
 
     @Column(name = "base_price",
-            nullable = false
-    )
+            nullable = false)
     private BigDecimal basePrice;
 
     @Column(name = "discounted_price")
@@ -98,21 +89,18 @@ public class Product {
     @OneToMany(mappedBy = "product",
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+            orphanRemoval = true)
     private List<Variants> variants = new ArrayList<>();
 
     @OneToMany(mappedBy = "product",
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+            orphanRemoval = true)
     private List<RatingReview> ratingReviews = new ArrayList<>();
 
     @CreationTimestamp
     @Column(updatable = false,
-            name = "created_at"
-    )
+            name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp

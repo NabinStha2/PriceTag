@@ -17,7 +17,6 @@ import com.example.pricetag.features.image.service.ImageService;
 import com.example.pricetag.utils.ColorLogger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,12 +28,9 @@ import java.util.List;
 @Slf4j
 public class CategoryServiceImpl implements CategoryService {
 
-    @Autowired
-    private CategoryRepo categoryRepo;
-    @Autowired
-    private CategoryMapper categoryMapper;
-    @Autowired
-    private ImageService imageService;
+    private final CategoryRepo categoryRepo;
+    private final CategoryMapper categoryMapper;
+    private final ImageService imageService;
 
     @Override
     public CommonResponseDto<List<CategoryResponseDto>> getAllCategories() {
