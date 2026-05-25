@@ -23,7 +23,6 @@ import com.example.pricetag.utils.PageableBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -191,29 +190,22 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public CommonResponseDto getSearchProductsWithSubCategoryIdAndName(SubCategoryDto subCategoryDto,
-                                                                       PaginationDto paginationDto, String name)
-            throws ApplicationException {
-        Pageable pageable = PageRequest.of(paginationDto.getPage() - 1, paginationDto.getLimit());
-        Optional<SubCategory> existingSubCategoryOptional = subCategoryRepo.findById(subCategoryDto.getId());
-        if (existingSubCategoryOptional.isPresent()) {
-            List<Product> productsList = productRepo.findAllBySubCategoryIdAndNameContainingIgnoreCase(
+    public CommonResponseDto<List<ProductResponseDto>> getSearchProductsWithSubCategoryIdAndName(
+            SubCategoryDto subCategoryDto, PaginationDto paginationDto, String name) throws ApplicationException {
+        Pageable pageable = PageableBuilder.buildPageable(paginationDto);
+        if (subCategoryRepo.existsSubCategoryById(subCategoryDto.getId())) {
+            Page<Product> productsList = productRepo.findAllBySubCategoryIdAndNameContainingIgnoreCase(
                     subCategoryDto.getId(), pageable, name);
-            int productCount = productRepo
-                    .findAllBySubCategoryIdAndNameContainingIgnoreCase(subCategoryDto.getId(), null, name)
-                    .size();
-//            productsList.forEach(d -> ColorLogger.logInfo("product :: " + d.getName()));
+
+            List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
+                    productsList.getContent());
+            
             return CommonResponseDto
-                    .builder()
-                    .message("SearchProduct fetch Successfully")
-                    .data(Map.of("results", productsList, "pagination",
-                                 Map.of("totalItems", productCount, "itemsPerPage", paginationDto.getLimit(),
-                                        "totalPages", (int) Math.ceil((double) productCount / paginationDto.getLimit()),
-                                        "currentPage", paginationDto.getPage(), "hasNext", paginationDto.getPage() <
-                                                                                           (int) Math.ceil(
-                                                                                                   (double) productCount /
-                                                                                                   paginationDto.getLimit()),
-                                        "hasPrevious", paginationDto.getPage() > 1)))
+                    .<List<ProductResponseDto>>builder()
+                    .message("Search products fetch Successfully")
+                    .data(productResponseDtoList)
+                    .pagination(PaginatedResponseDto.from(productsList))
+                    .status(HttpStatus.OK.value())
                     .success(true)
                     .build();
         } else {

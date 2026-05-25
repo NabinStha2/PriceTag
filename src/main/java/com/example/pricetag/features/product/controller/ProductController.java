@@ -32,17 +32,14 @@ public class ProductController {
             )
             int page,
             @RequestParam(name = "limit",
-                    defaultValue = "5",
                     required = false
             )
             int limit,
             @RequestParam(name = "sortBy",
-                    defaultValue = "createdAt",
                     required = false
             )
             String sortBy,
             @RequestParam(name = "order",
-                    defaultValue = "asc",
                     required = false
             )
             String order) {
@@ -87,17 +84,14 @@ public class ProductController {
             )
             int page,
             @RequestParam(name = "limit",
-                    defaultValue = "5",
                     required = false
             )
             int limit,
             @RequestParam(name = "sortBy",
-                    defaultValue = "createdAt",
                     required = false
             )
             String sortBy,
             @RequestParam(name = "order",
-                    defaultValue = "asc",
                     required = false
             )
             String order) {
@@ -121,7 +115,7 @@ public class ProductController {
     }
 
     @GetMapping("/subcategory/{subCategoryId}/search")
-    public ResponseEntity<CommonResponseDto> getSearchProductsWithSubCategoryId(
+    public ResponseEntity<CommonResponseDto<List<ProductResponseDto>>> getSearchProductsWithSubCategoryId(
             @PathVariable
             Long subCategoryId,
             @RequestParam(name = "page",
@@ -130,7 +124,6 @@ public class ProductController {
             )
             int page,
             @RequestParam(name = "limit",
-                    defaultValue = "5",
                     required = false
             )
             int limit,

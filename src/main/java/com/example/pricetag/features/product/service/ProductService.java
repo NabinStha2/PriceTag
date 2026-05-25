@@ -21,8 +21,9 @@ public interface ProductService {
     CommonResponseDto<List<ProductResponseDto>> getProductsWithSubCategoryId(SubCategoryDto subCategoryDto,
                                                                              PaginationDto paginationDto);
 
-    CommonResponseDto getSearchProductsWithSubCategoryIdAndName(SubCategoryDto subCategoryDto,
-                                                                PaginationDto paginationDto, String name);
+    CommonResponseDto<List<ProductResponseDto>> getSearchProductsWithSubCategoryIdAndName(SubCategoryDto subCategoryDto,
+                                                                                          PaginationDto paginationDto,
+                                                                                          String name);
 
     CommonResponseDto deleteProductById(Long productId);
 
