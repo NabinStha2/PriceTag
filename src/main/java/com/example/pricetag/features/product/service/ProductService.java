@@ -14,7 +14,7 @@ public interface ProductService {
 
     CommonResponseDto createProduct(ProductDto productDto);
 
-    CommonResponseDto getAllProducts(PaginationDto paginationDto);
+    CommonResponseDto<List<ProductResponseDto>> getAllProducts(PaginationDto paginationDto);
 
     CommonResponseDto getSingleProduct(Long productId);
 

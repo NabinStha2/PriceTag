@@ -92,10 +92,12 @@ public class ProductController {
             )
             int limit,
             @RequestParam(name = "sortBy",
+                    defaultValue = "createdAt",
                     required = false
             )
             String sortBy,
             @RequestParam(name = "order",
+                    defaultValue = "asc",
                     required = false
             )
             String order) {

@@ -5,12 +5,10 @@ import com.example.pricetag.dto.PaginatedResponseDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.entity.CartItem;
-import com.example.pricetag.entity.Variants;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.category.repository.CategoryRepo;
-import com.example.pricetag.features.cloudinary.service.CloudinaryService;
 import com.example.pricetag.features.product.dto.ProductDto;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
 import com.example.pricetag.features.product.entity.Product;
@@ -27,11 +25,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,7 +39,6 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepo productRepo;
     private final CategoryRepo categoryRepo;
     private final SubCategoryRepo subCategoryRepo;
-    private final CloudinaryService cloudinaryService;
     private final CartItemRepo cartItemRepo;
     private final ProductMapper productMapper;
 
@@ -147,96 +142,23 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public CommonResponseDto getAllProducts(PaginationDto paginationDto) {
-        try {
-            if (paginationDto.getSortBy() == null) {
-                paginationDto.setSortBy("createdAt");
-            }
-            if (paginationDto.getOrder() == null) {
-                paginationDto.setOrder("desc");
-            }
-            Pageable pageable = PageRequest.of(paginationDto.getPage() - 1, paginationDto.getLimit(),
-//                    Objects.equals(paginationDto.getOrder(), "asc")
-                                               paginationDto
-                                                       .getOrder()
-                                                       .equals("asc") ? Sort
-                                                                        .by(paginationDto.getSortBy())
-                                                                        .ascending() : Sort
-                                                                                       .by(paginationDto.getSortBy())
-                                                                                       .descending());
+    public CommonResponseDto<List<ProductResponseDto>> getAllProducts(PaginationDto paginationDto) {
+        Pageable pageable = PageableBuilder.buildPageable(paginationDto);
 
-            int productCount = productRepo
-                    .findAll()
-                    .size();
+        Page<Product> existingProductList = productRepo.findAllByIsActiveTrue(pageable);
 
-            List<ProductDto> productDtoList = new ArrayList<>();
-            List<Variants> listVariants = new ArrayList<>();
-            productRepo
-                    .findAll(pageable)
-                    .getContent()
-                    .forEach(product -> {
-                        listVariants.addAll(product.getVariants());
-                        productDtoList.add(ProductDto
-                                                   .builder()
-                                                   .productId(product.getId())
-                                                   .name(product.getName())
-                                                   .description(product.getDescription())
-                                                   .category(CategoryResponseDto
-                                                                     .builder()
-                                                                     .id(product
-                                                                                 .getCategory()
-                                                                                 .getId())
-                                                                     .name(product
-                                                                                   .getCategory()
-                                                                                   .getCategoryName())
-                                                                     .createdAt(product
-                                                                                        .getCategory()
-                                                                                        .getCreatedAt())
-                                                                     .updatedAt(product
-                                                                                        .getCategory()
-                                                                                        .getUpdatedAt())
-                                                                     .build())
-                                                   .subCategory(SubCategoryDto
-                                                                        .builder()
-                                                                        .id(product
-                                                                                    .getSubCategory()
-                                                                                    .getId())
-                                                                        .subCategoryName(product
-                                                                                                 .getSubCategory()
-                                                                                                 .getSubCategoryName())
-                                                                        .createdAt(product
-                                                                                           .getSubCategory()
-                                                                                           .getCreatedAt())
-                                                                        .updatedAt(product
-                                                                                           .getSubCategory()
-                                                                                           .getUpdatedAt())
-                                                                        .build())
-//                        .images(product.getImages())
-                                                   .createdAt(product.getCreatedAt())
-                                                   .updatedAt(product.getUpdatedAt())
-                                                   .variants(product.getVariants())
-                                                   .build());
-                    });
+        List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
+                existingProductList.getContent());
 
-            ColorLogger.logError(listVariants.toString());
+        return CommonResponseDto
+                .<List<ProductResponseDto>>builder()
+                .message("Products fetched successfully")
+                .data(productResponseDtoList)
+                .pagination(PaginatedResponseDto.from(existingProductList))
+                .success(true)
+                .status(HttpStatus.OK.value())
+                .build();
 
-            return CommonResponseDto
-                    .builder()
-                    .data(Map.of("results", productDtoList, "pagination",
-                                 Map.of("totalItems", productCount, "itemsPerPage", paginationDto.getLimit(),
-                                        "totalPages", (int) Math.ceil((double) productCount / paginationDto.getLimit()),
-                                        "currentPage", paginationDto.getPage(), "hasNext", paginationDto.getPage() <
-                                                                                           (int) Math.ceil(
-                                                                                                   (double) productCount /
-                                                                                                   paginationDto.getLimit()),
-                                        "hasPrevious", paginationDto.getPage() > 1)))
-                    .message("Product fetched successfully")
-                    .success(true)
-                    .build();
-        } catch (Exception e) {
-            ColorLogger.logError(e.getLocalizedMessage());
-            throw new ApplicationException("404", e.getLocalizedMessage(), HttpStatus.NOT_FOUND);
-        }
     }
 
     @Override
