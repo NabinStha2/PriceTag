@@ -9,7 +9,7 @@ import com.example.pricetag.entity.User;
 import com.example.pricetag.entity.Variants;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
-import com.example.pricetag.features.product.dto.ProductDto;
+import com.example.pricetag.features.product.dto.request.CreateProductRequestDto;
 import com.example.pricetag.features.product.entity.Product;
 import com.example.pricetag.features.product.repository.ProductRepo;
 import com.example.pricetag.repository.CartItemRepo;
@@ -47,7 +47,7 @@ public class CartItemServiceImpl implements CartItemService {
         return CartItemDto
                 .builder()
                 .id(newCartItem.getId())
-                .product(ProductDto
+                .product(CreateProductRequestDto
                                  .builder()
                                  .name(product != null ? product.getName() : null)
                                  .description(product != null ? product.getDescription() : null)

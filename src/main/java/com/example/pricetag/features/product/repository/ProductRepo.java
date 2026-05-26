@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductRepo extends JpaRepository<Product, Long> {
 
+    boolean existsBySlug(String slug);
+
     Page<Product> findAllByIsActiveTrue(Pageable pageable);
 
     Page<Product> findAllBySubCategoryIdAndNameContainingIgnoreCase(Long subCategoryId, Pageable pageable, String name);

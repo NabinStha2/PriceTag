@@ -4,7 +4,7 @@ import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
-import com.example.pricetag.features.product.dto.ProductDto;
+import com.example.pricetag.features.product.dto.request.CreateProductRequestDto;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
 import com.example.pricetag.features.product.service.ProductService;
 import com.example.pricetag.utils.ColorLogger;
@@ -57,23 +57,22 @@ public class ProductController {
     }
 
     @PostMapping("/category/{categoryId}/subcategory/{subCategoryId}/add")
-    public ResponseEntity<CommonResponseDto> createProduct(
+    public ResponseEntity<CommonResponseDto<ProductResponseDto>> createProduct(
             @PathVariable
             Long categoryId,
             @PathVariable
             Long subCategoryId,
             @RequestBody
-            ProductDto productDto) {
-        productDto.setCategory(CategoryResponseDto
-                                       .builder()
-                                       .id(categoryId)
-                                       .build());
-        productDto.setSubCategory(SubCategoryDto
-                                          .builder()
-                                          .id(subCategoryId)
-                                          .build());
-        System.out.println(productDto);
-        return ResponseEntity.ok(productService.createProduct(productDto));
+            CreateProductRequestDto createProductRequestDto) {
+        createProductRequestDto.setCategory(CategoryResponseDto
+                                                    .builder()
+                                                    .id(categoryId)
+                                                    .build());
+        createProductRequestDto.setSubCategory(SubCategoryDto
+                                                       .builder()
+                                                       .id(subCategoryId)
+                                                       .build());
+        return ResponseEntity.ok(productService.createProduct(createProductRequestDto));
     }
 
     @GetMapping("")
@@ -165,9 +164,9 @@ public class ProductController {
             @PathVariable
             Long productId,
             @RequestBody
-            ProductDto productDto) {
-        productDto.setProductId(productId);
-        return ResponseEntity.ok(productService.editProduct(productDto));
+            CreateProductRequestDto createProductRequestDto) {
+        createProductRequestDto.setProductId(productId);
+        return ResponseEntity.ok(productService.editProduct(createProductRequestDto));
     }
 
 }

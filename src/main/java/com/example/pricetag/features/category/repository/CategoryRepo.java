@@ -20,7 +20,6 @@ public interface CategoryRepo extends JpaRepository<Category, Long> {
             @Nonnull
             Long id);
 
-    Category findByCategoryName(String name);
 
     List<Category> findAllByIsActiveTrue();
 

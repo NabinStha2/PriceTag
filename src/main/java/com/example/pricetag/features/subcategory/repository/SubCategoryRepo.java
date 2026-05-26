@@ -4,6 +4,8 @@ import com.example.pricetag.features.subcategory.entity.SubCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface SubCategoryRepo extends JpaRepository<SubCategory, Long> {
     SubCategory findBySubCategoryName(String name);
@@ -12,4 +14,6 @@ public interface SubCategoryRepo extends JpaRepository<SubCategory, Long> {
                                                                             String subCategoryName);
 
     boolean existsSubCategoryById(Long id);
+
+    Optional<SubCategory> findByIdAndCategoryId(Long id, Long categoryId);
 }

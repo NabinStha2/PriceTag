@@ -2,7 +2,7 @@ package com.example.pricetag.dto;
 
 import com.example.pricetag.entity.User;
 import com.example.pricetag.entity.Variants;
-import com.example.pricetag.features.product.dto.ProductDto;
+import com.example.pricetag.features.product.dto.request.CreateProductRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +21,7 @@ public class CartItemDto {
 
     private User user;
 
-    private ProductDto product;
+    private CreateProductRequestDto product;
 
     private Integer quantity;
 
