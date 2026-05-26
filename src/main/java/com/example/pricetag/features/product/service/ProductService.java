@@ -25,8 +25,8 @@ public interface ProductService {
                                                                                           PaginationDto paginationDto,
                                                                                           String name);
 
-    CommonResponseDto deleteProductById(Long productId);
+    CommonResponseDto<Void> deleteProductById(Long productId);
 
-    CommonResponseDto editProduct(CreateProductRequestDto createProductRequestDto);
+    CommonResponseDto<ProductResponseDto> editProduct(CreateProductRequestDto createProductRequestDto);
 
 }

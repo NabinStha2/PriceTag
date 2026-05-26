@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface ProductRepo extends JpaRepository<Product, Long> {
 
@@ -16,4 +18,6 @@ public interface ProductRepo extends JpaRepository<Product, Long> {
     Page<Product> findAllBySubCategoryIdAndNameContainingIgnoreCase(Long subCategoryId, Pageable pageable, String name);
 
     Page<Product> findAllBySubCategoryIdAndIsActiveTrue(Long subCategoryId, Pageable pageable);
+
+    Optional<Product> findByIdAndIsActiveTrue(Long id);
 }

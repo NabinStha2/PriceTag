@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -43,8 +42,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
 
     private static Product createNewProduct(CreateProductRequestDto createProductRequestDto,
-                                            SubCategory filteredSubCategory, Category category,
-                                            String slug) {
+                                            SubCategory filteredSubCategory, Category category, String slug) {
         Product newProduct = new Product();
         newProduct.setCategory(category);
         newProduct.setSubCategory(filteredSubCategory);
@@ -260,75 +258,76 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public CommonResponseDto deleteProductById(Long productId) {
-        Optional<Product> productOptional = productRepo.findById(productId);
-        if (productOptional.isPresent()) {
-            Product product = productOptional.get();
+    public CommonResponseDto<Void> deleteProductById(Long productId) {
+        Product existingProduct = productRepo
+                .findByIdAndIsActiveTrue(productId)
+                .orElseThrow(() -> new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND));
 //            product.getImages()
 //                    .forEach(image -> cloudinaryService.deleteFile(image.getPublicId(), "pricetag/" + product.getCategory()
 //                            .getCategoryName() + "/" + product.getSubCategory().getSubCategoryName()));
 
-            CartItem existingCartItem = cartItemRepo.findByProductId(productId);
-            if (existingCartItem != null) {
-                cartItemRepo.delete(existingCartItem);
-            }
-
-            productRepo.delete(product);
-
-            return CommonResponseDto
-                    .builder()
-                    .message("Product has been deleted successfully")
-                    .success(true)
-                    .build();
-        } else {
-            throw new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND);
+        CartItem existingCartItem = cartItemRepo.findByProductId(productId);
+        if (existingCartItem != null) {
+            cartItemRepo.delete(existingCartItem);
         }
+
+//        productRepo.delete(existingProduct);
+
+        existingProduct.setIsActive(false);
+        existingProduct.setIsDeleted(true);
+        productRepo.save(existingProduct);
+
+        return CommonResponseDto
+                .<Void>builder()
+                .message("Product has been deleted successfully")
+                .status(HttpStatus.OK.value())
+                .success(true)
+                .build();
     }
 
     @Override
-    public CommonResponseDto editProduct(CreateProductRequestDto createProductRequestDto) {
-        Optional<Product> productOptional = productRepo.findById(createProductRequestDto.getProductId());
+    @Transactional
+    public CommonResponseDto<ProductResponseDto> editProduct(CreateProductRequestDto createProductRequestDto) {
+        Product existingProduct = productRepo
+                .findByIdAndIsActiveTrue(createProductRequestDto.getProductId())
+                .orElseThrow(() -> new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND));
 
-        if (productOptional.isPresent()) {
-            Product product = productOptional.get();
-            product.setName(createProductRequestDto.getName());
-            product.setDescription(createProductRequestDto.getDescription());
-            if (createProductRequestDto.getCategory() != null && createProductRequestDto
-                                                                         .getCategory()
-                                                                         .getId() != null) {
-                product.setCategory(categoryRepo
-                                            .findById(createProductRequestDto
-                                                              .getCategory()
-                                                              .getId())
-                                            .orElseThrow(() -> new ApplicationException("404", "Category not found",
-                                                                                        HttpStatus.NOT_FOUND)));
-            }
-            if (createProductRequestDto.getSubCategory() != null && createProductRequestDto
-                                                                            .getSubCategory()
-                                                                            .getId() != null) {
-                product.setSubCategory(subCategoryRepo
-                                               .findById(createProductRequestDto
-                                                                 .getSubCategory()
-                                                                 .getId())
-                                               .orElseThrow(
-                                                       () -> new ApplicationException("404", "Sub Category not found",
-                                                                                      HttpStatus.NOT_FOUND)));
-            }
+        existingProduct.setName(createProductRequestDto.getName());
+        existingProduct.setDescription(createProductRequestDto.getDescription());
 
-            try {
-                productRepo.save(product);
-                return CommonResponseDto
-                        .builder()
-                        .message("Product has been updated successfully")
-                        .success(true)
-                        .data(Map.of("results", product))
-                        .build();
-            } catch (DataAccessException e) {
-                ColorLogger.logError("editProduct :: Database error :: " + e.getMessage());
-                throw new ApplicationException("500", "Database error", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        } else {
-            throw new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND);
+        if (createProductRequestDto.getCategory() != null && createProductRequestDto
+                                                                     .getCategory()
+                                                                     .getId() != null) {
+            existingProduct.setCategory(categoryRepo
+                                                .findById(createProductRequestDto
+                                                                  .getCategory()
+                                                                  .getId())
+                                                .orElseThrow(() -> new ApplicationException("404", "Category not found",
+                                                                                            HttpStatus.NOT_FOUND)));
+        }
+        if (createProductRequestDto.getSubCategory() != null && createProductRequestDto
+                                                                        .getSubCategory()
+                                                                        .getId() != null) {
+            existingProduct.setSubCategory(subCategoryRepo
+                                                   .findById(createProductRequestDto
+                                                                     .getSubCategory()
+                                                                     .getId())
+                                                   .orElseThrow(() -> new ApplicationException("404",
+                                                                                               "Sub Category not found",
+                                                                                               HttpStatus.NOT_FOUND)));
+        }
+
+        try {
+            productRepo.save(existingProduct);
+            return CommonResponseDto
+                    .<ProductResponseDto>builder()
+                    .message("Product has been updated successfully")
+                    .success(true)
+                    .status(HttpStatus.OK.value())
+                    .build();
+        } catch (DataAccessException e) {
+            ColorLogger.logError("editProduct :: Database error :: " + e.getMessage());
+            throw new ApplicationException("500", "Database error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

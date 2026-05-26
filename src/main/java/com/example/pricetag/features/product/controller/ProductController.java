@@ -76,7 +76,7 @@ public class ProductController {
     }
 
     @GetMapping("")
-    public ResponseEntity<CommonResponseDto> getAllProducts(
+    public ResponseEntity<CommonResponseDto<List<ProductResponseDto>>> getAllProducts(
             @RequestParam(name = "page",
                     defaultValue = "1",
                     required = false
@@ -153,14 +153,14 @@ public class ProductController {
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<CommonResponseDto> deleteProductById(
+    public ResponseEntity<CommonResponseDto<Void>> deleteProductById(
             @PathVariable
             Long productId) {
         return ResponseEntity.ok(productService.deleteProductById(productId));
     }
 
     @PatchMapping("/{productId}")
-    public ResponseEntity<CommonResponseDto> editProduct(
+    public ResponseEntity<CommonResponseDto<ProductResponseDto>> editProduct(
             @PathVariable
             Long productId,
             @RequestBody
