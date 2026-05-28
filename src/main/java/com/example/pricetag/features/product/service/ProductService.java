@@ -5,6 +5,7 @@ import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.features.product.dto.request.CreateProductRequestDto;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
+import com.example.pricetag.features.product.dto.response.SingleProductDetailsResponseDto;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public interface ProductService {
 
     CommonResponseDto<List<ProductResponseDto>> getAllProducts(PaginationDto paginationDto);
 
-    CommonResponseDto getSingleProduct(Long productId);
+    CommonResponseDto<SingleProductDetailsResponseDto> getSingleProduct(Long productId);
 
     CommonResponseDto<List<ProductResponseDto>> getProductsWithSubCategoryId(SubCategoryDto subCategoryDto,
                                                                              PaginationDto paginationDto);

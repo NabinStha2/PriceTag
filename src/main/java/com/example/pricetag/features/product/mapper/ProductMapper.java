@@ -2,6 +2,7 @@ package com.example.pricetag.features.product.mapper;
 
 import com.example.pricetag.features.category.mapper.CategoryMapper;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
+import com.example.pricetag.features.product.dto.response.SingleProductDetailsResponseDto;
 import com.example.pricetag.features.product.entity.Product;
 import com.example.pricetag.features.subcategory.mapper.SubCategoryMapper;
 import org.mapstruct.Mapper;
@@ -17,4 +18,6 @@ public interface ProductMapper {
 
     List<ProductResponseDto> mapProductListToProductResponseDtoList(List<Product> products);
 
+    SingleProductDetailsResponseDto mapProductToSingleProductDetailsResponseDto(Product product);
+    
 }

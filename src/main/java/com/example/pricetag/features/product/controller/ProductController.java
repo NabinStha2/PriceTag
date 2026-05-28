@@ -6,6 +6,7 @@ import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import com.example.pricetag.features.product.dto.request.CreateProductRequestDto;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
+import com.example.pricetag.features.product.dto.response.SingleProductDetailsResponseDto;
 import com.example.pricetag.features.product.service.ProductService;
 import com.example.pricetag.utils.ColorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +107,7 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<CommonResponseDto> getSingleProduct(
+    public ResponseEntity<CommonResponseDto<SingleProductDetailsResponseDto>> getSingleProduct(
             @PathVariable
             Long productId
                                                              ) {

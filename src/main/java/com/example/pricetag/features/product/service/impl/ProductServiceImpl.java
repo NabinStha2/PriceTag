@@ -10,6 +10,7 @@ import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.category.repository.CategoryRepo;
 import com.example.pricetag.features.product.dto.request.CreateProductRequestDto;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
+import com.example.pricetag.features.product.dto.response.SingleProductDetailsResponseDto;
 import com.example.pricetag.features.product.entity.Product;
 import com.example.pricetag.features.product.mapper.ProductMapper;
 import com.example.pricetag.features.product.repository.ProductRepo;
@@ -29,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -205,31 +205,21 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public CommonResponseDto getSingleProduct(Long productId) {
-        try {
-            Product product = productRepo
-                    .findById(productId)
-                    .orElseThrow(() -> new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND));
-            if (product != null) {
-                ColorLogger.logInfo(product.toString());
-                return CommonResponseDto
-                        .builder()
-                        .success(true)
-                        .message("Product fetched successfully")
-                        .data(Map.of("results", product))
-                        .build();
-            } else {
-                return CommonResponseDto
-                        .builder()
-                        .success(false)
-                        .message("Product not found")
-                        .data(null)
-                        .build();
-            }
-        } catch (Exception e) {
-            ColorLogger.logError(e.toString());
-            throw new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND);
-        }
+    @Transactional(readOnly = true)
+    public CommonResponseDto<SingleProductDetailsResponseDto> getSingleProduct(Long productId) {
+        Product product = productRepo
+                .findByIdAndIsActiveTrue(productId)
+                .orElseThrow(() -> new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND));
+        SingleProductDetailsResponseDto productDetailsResponseDto =
+                productMapper.mapProductToSingleProductDetailsResponseDto(product);
+
+        return CommonResponseDto
+                .<SingleProductDetailsResponseDto>builder()
+                .success(true)
+                .status(HttpStatus.OK.value())
+                .message("Product fetched successfully")
+                .data(productDetailsResponseDto)
+                .build();
     }
 
 
