@@ -2,6 +2,7 @@ package com.example.pricetag.features.product.dto.response;
 
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
+import com.example.pricetag.features.image.dto.response.ImageResponseDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +24,7 @@ public class SingleProductDetailsResponseDto {
     private String slug;
     private String description;
     private String shortDescription;
-    private String imageUrl;                   // main/primary image
+    private List<ImageResponseDto> imageUrl;                   // main/primary image
     private BigDecimal basePrice;              // MRP/base price
     private BigDecimal discountedPrice;        // final / offer price if available
     private String brand;

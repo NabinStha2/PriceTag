@@ -33,6 +33,7 @@ public class ProductController {
             )
             int page,
             @RequestParam(name = "limit",
+                    defaultValue = "5",
                     required = false
             )
             int limit,
@@ -63,7 +64,7 @@ public class ProductController {
             Long categoryId,
             @PathVariable
             Long subCategoryId,
-            @RequestBody
+            @ModelAttribute
             CreateProductRequestDto createProductRequestDto) {
         createProductRequestDto.setCategory(CategoryResponseDto
                                                     .builder()
@@ -84,6 +85,7 @@ public class ProductController {
             )
             int page,
             @RequestParam(name = "limit",
+                    defaultValue = "5",
                     required = false
             )
             int limit,
@@ -110,7 +112,7 @@ public class ProductController {
     public ResponseEntity<CommonResponseDto<SingleProductDetailsResponseDto>> getSingleProduct(
             @PathVariable
             Long productId
-                                                             ) {
+                                                                                              ) {
         return ResponseEntity.ok(productService.getSingleProduct(productId));
     }
 
@@ -124,6 +126,7 @@ public class ProductController {
             )
             int page,
             @RequestParam(name = "limit",
+                    defaultValue = "5",
                     required = false
             )
             int limit,

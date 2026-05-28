@@ -5,9 +5,12 @@ import com.example.pricetag.dto.PaginatedResponseDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.entity.CartItem;
+import com.example.pricetag.enums.ImageType;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.category.repository.CategoryRepo;
+import com.example.pricetag.features.image.entity.Image;
+import com.example.pricetag.features.image.service.ImageService;
 import com.example.pricetag.features.product.dto.request.CreateProductRequestDto;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
 import com.example.pricetag.features.product.dto.response.SingleProductDetailsResponseDto;
@@ -40,6 +43,7 @@ public class ProductServiceImpl implements ProductService {
     private final SubCategoryRepo subCategoryRepo;
     private final CartItemRepo cartItemRepo;
     private final ProductMapper productMapper;
+    private final ImageService imageService;
 
     private static Product createNewProduct(CreateProductRequestDto createProductRequestDto,
                                             SubCategory filteredSubCategory, Category category, String slug) {
@@ -173,6 +177,9 @@ public class ProductServiceImpl implements ProductService {
         String slug = resolveSlug(createProductRequestDto);
         Product newProduct = createNewProduct(createProductRequestDto, existingSubCategory, existingCategory, slug);
         Product savedProduct = productRepo.save(newProduct);
+
+        imageService.saveMultiImages(savedProduct.getId(), ImageType.PRODUCT, createProductRequestDto.getImages());
+
         ProductResponseDto productResponseDto = productMapper.mapProductToProductResponseDto(savedProduct);
 
         return CommonResponseDto
@@ -210,8 +217,10 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepo
                 .findByIdAndIsActiveTrue(productId)
                 .orElseThrow(() -> new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND));
-        SingleProductDetailsResponseDto productDetailsResponseDto =
-                productMapper.mapProductToSingleProductDetailsResponseDto(product);
+        SingleProductDetailsResponseDto productDetailsResponseDto = productMapper.mapProductToSingleProductDetailsResponseDto(
+                product);
+        List<Image> productImages = imageService.getImages(productId, ImageType.PRODUCT);
+        productDetailsResponseDto.setImageUrl(productMapper.mapImagesToImageResponseDtoList(productImages));
 
         return CommonResponseDto
                 .<SingleProductDetailsResponseDto>builder()
