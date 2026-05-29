@@ -11,7 +11,6 @@ import com.example.pricetag.features.image.service.ImageService;
 import com.example.pricetag.utils.ColorLogger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -23,13 +22,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ImageServiceImpl implements ImageService {
-    @Autowired
-    private CategoryRepo categoryRepo;
+    private final CategoryRepo categoryRepo;
 
-    @Autowired
-    private CloudinaryService cloudinaryService;
-    @Autowired
-    private ImageRepo imageRepo;
+    private final CloudinaryService cloudinaryService;
+    private final ImageRepo imageRepo;
+
 
     @Override
     public ImageResponseDto saveSingleImage(Long entityId, ImageType entityType, MultipartFile file,
