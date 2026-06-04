@@ -1,7 +1,7 @@
 package com.example.pricetag.features.category.controller;
 
 import com.example.pricetag.dto.CommonResponseDto;
-import com.example.pricetag.enums.ImageType;
+import com.example.pricetag.enums.EntityType;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.dto.request.CreateCategoryRequestDto;
 import com.example.pricetag.features.category.dto.request.UpdateCategoryImageRequestDto;
@@ -37,7 +37,8 @@ public class CategoryController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<CommonResponseDto<Void>> createCategory(CreateCategoryRequestDto createCategoryRequestDto) {
+    public ResponseEntity<CommonResponseDto<Void>> createCategory(
+            CreateCategoryRequestDto createCategoryRequestDto) {
         return ResponseEntity.ok(categoryService.createCategory(createCategoryRequestDto));
     }
 
@@ -66,16 +67,18 @@ public class CategoryController {
             String entityType,
             @ModelAttribute
             UpdateCategoryImageRequestDto updateCategoryImageRequestDto) {
-        ImageType imageType;
+        EntityType EntityType;
         try {
-            imageType = ImageType.valueOf(entityType.toUpperCase());
+            EntityType = com.example.pricetag.enums.EntityType.valueOf(entityType.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new ApplicationException("400", "Invalid entity type: " + entityType, HttpStatus.BAD_REQUEST);
+            throw new ApplicationException("400", "Invalid entity type: " + entityType,
+                                           HttpStatus.BAD_REQUEST);
         }
 
-        updateCategoryImageRequestDto.setImageType(imageType);
+        updateCategoryImageRequestDto.setImageType(EntityType);
 
-        return ResponseEntity.ok(categoryService.updateCategoryImage(updateCategoryImageRequestDto));
+        return ResponseEntity.ok(
+                categoryService.updateCategoryImage(updateCategoryImageRequestDto));
     }
 
 

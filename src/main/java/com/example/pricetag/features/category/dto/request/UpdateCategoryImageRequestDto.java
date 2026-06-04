@@ -1,7 +1,7 @@
 package com.example.pricetag.features.category.dto.request;
 
 
-import com.example.pricetag.enums.ImageType;
+import com.example.pricetag.enums.EntityType;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +18,7 @@ public class UpdateCategoryImageRequestDto {
     private Long entityId;
 
     @NotNull
-    private ImageType imageType;
+    private EntityType imageType;
 
     @NotNull
     private MultipartFile file;

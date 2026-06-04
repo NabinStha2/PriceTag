@@ -2,7 +2,7 @@ package com.example.pricetag.features.product.dto.response;
 
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
-import com.example.pricetag.features.image.dto.response.ImageResponseDto;
+import com.example.pricetag.features.media.dto.response.MediaResponseDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +24,7 @@ public class SingleProductDetailsResponseDto {
     private String slug;
     private String description;
     private String shortDescription;
-    private List<ImageResponseDto> imageUrl;                   // main/primary image
+    private List<MediaResponseDto> imageUrl;                   // main/primary image
     private BigDecimal basePrice;              // MRP/base price
     private BigDecimal discountedPrice;        // final / offer price if available
     private String brand;
@@ -36,44 +36,5 @@ public class SingleProductDetailsResponseDto {
     private CategoryResponseDto category;
     private SubCategoryDto subCategory;
 
-    private List<VariantDto> variants;
-
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class VariantDto {
-        private Long id;
-        private String sku;
-        private Integer stockQuantity;
-        private BigDecimal actualPrice;
-        private BigDecimal discountedPrice;
-        private Integer weightInGrams;
-        private ColorDto color;
-        private SizeDto size;
-    }
-
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class ColorDto {
-        private Long id;
-        private String name;
-        private String hexCode;
-    }
-
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class SizeDto {
-        private Long id;
-        private String name;
-        private Integer displayOrder;
-        private String sizeType;
-    }
+    private List<VariantResponseDto> variants;
 }

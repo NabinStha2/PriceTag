@@ -1,17 +1,15 @@
 package com.example.pricetag.features.product.entity;
 
+import com.example.pricetag.entity.BaseEntity;
 import com.example.pricetag.entity.RatingReview;
 import com.example.pricetag.entity.Variants;
 import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.subcategory.entity.SubCategory;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,11 +26,7 @@ import java.util.List;
                 name = "idx_category_id"), @Index(columnList = "brand",
                 name = "idx_brand")},
         uniqueConstraints = {@UniqueConstraint(columnNames = {"slug"})})
-public class Product {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Product extends BaseEntity {
 
     @Column(name = "name",
             nullable = false)
@@ -49,18 +43,13 @@ public class Product {
     private String description;
 
     // Short description for listing
-    @Column(length = 500)
+    @Column(name = "short_description",
+            length = 500)
     private String shortDescription;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id",
-            nullable = false)
-    private Category category;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subcategory_id",
-            nullable = false)
-    private SubCategory subCategory;
+    @Column(name = "primary_image_url",
+            length = 1000)
+    private String primaryImageUrl; // Main image URL for quick access
 
     @Builder.Default
     @Column(name = "is_active")
@@ -86,6 +75,16 @@ public class Product {
     @Column(name = "discounted_price")
     private BigDecimal discountedPrice;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id",
+            nullable = false)
+    private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategory_id",
+            nullable = false)
+    private SubCategory subCategory;
+
     @OneToMany(mappedBy = "product",
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
@@ -97,15 +96,5 @@ public class Product {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<RatingReview> ratingReviews = new ArrayList<>();
-
-    @CreationTimestamp
-    @Column(updatable = false,
-            name = "created_at")
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
 
 }

@@ -2,13 +2,13 @@ package com.example.pricetag.features.subcategory.service.impl;
 
 import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.SubCategoryDto;
-import com.example.pricetag.enums.ImageType;
+import com.example.pricetag.enums.EntityType;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.category.repository.CategoryRepo;
-import com.example.pricetag.features.image.dto.response.ImageResponseDto;
-import com.example.pricetag.features.image.service.ImageService;
+import com.example.pricetag.features.media.dto.response.MediaResponseDto;
+import com.example.pricetag.features.media.service.MediaService;
 import com.example.pricetag.features.subcategory.dto.request.CreateSubCategoryRequestDto;
 import com.example.pricetag.features.subcategory.entity.SubCategory;
 import com.example.pricetag.features.subcategory.mapper.SubCategoryMapper;
@@ -33,7 +33,7 @@ public class SubCategoryServiceImpl implements SubCategoryService {
     private SubCategoryRepo subCategoryRepo;
 
     @Autowired
-    private ImageService imageService;
+    private MediaService mediaService;
 
     @Autowired
     private CategoryRepo categoryRepo;
@@ -74,8 +74,10 @@ public class SubCategoryServiceImpl implements SubCategoryService {
     }
 
     @Override
-    public CommonResponseDto editSubCategory(SubCategoryDto subCategoryDto) throws ApplicationException {
-        Optional<SubCategory> existingSubCategoryOptional = subCategoryRepo.findById(subCategoryDto.getId());
+    public CommonResponseDto editSubCategory(SubCategoryDto subCategoryDto)
+            throws ApplicationException {
+        Optional<SubCategory> existingSubCategoryOptional = subCategoryRepo.findById(
+                subCategoryDto.getId());
         if (existingSubCategoryOptional.isPresent()) {
             SubCategory existingSubCategory = existingSubCategoryOptional.get();
 
@@ -83,9 +85,10 @@ public class SubCategoryServiceImpl implements SubCategoryService {
             if (subCategoryDto.getCategoryId() != null) {
                 existingSubCategory.setCategory(categoryRepo
                                                         .findById(subCategoryDto.getCategoryId())
-                                                        .orElseThrow(() -> new ApplicationException("404",
-                                                                                                    "Category not found",
-                                                                                                    HttpStatus.NOT_FOUND)));
+                                                        .orElseThrow(() -> new ApplicationException(
+                                                                "404",
+                                                                "Category not found",
+                                                                HttpStatus.NOT_FOUND)));
             }
 
             try {
@@ -99,7 +102,8 @@ public class SubCategoryServiceImpl implements SubCategoryService {
                         .build();
 
             } catch (DataAccessException ex) {
-                throw new ApplicationException("500", "Database error", HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new ApplicationException("500", "Database error",
+                                               HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
             throw new ApplicationException("404", " Category not found", HttpStatus.NOT_FOUND);
@@ -114,7 +118,8 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
         Category existingCategory = categoryRepo
                 .findById(categoryId)
-                .orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException("404", "Category not found",
+                                                            HttpStatus.NOT_FOUND));
 
         boolean exists = subCategoryRepo.existsByCategoryIdAndSubCategoryNameIgnoreCaseAndIsDeletedFalse(
                 existingCategory.getId(), createSubCategoryRequestDto.getSubCategoryName());
@@ -128,8 +133,9 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 //                .findFirst();
 
         if (exists) {
-            throw new ApplicationException("409", "SubCategory already exists with this name inside this " +
-                                                  existingCategory.getCategoryName(), HttpStatus.CONFLICT);
+            throw new ApplicationException("409",
+                                           "SubCategory already exists with this name inside this " +
+                                           existingCategory.getCategoryName(), HttpStatus.CONFLICT);
         }
 
         SubCategory newSubCategory = subCategoryMapper.mapCreateSubCategoryRequestDtoToSubCategory(
@@ -141,12 +147,13 @@ public class SubCategoryServiceImpl implements SubCategoryService {
                 .getFile()
                 .isEmpty()) {
 
-            ImageResponseDto imageResponseDto = imageService.saveSingleImage(newSavedSubCategory.getId(),
-                                                                             ImageType.SUBCATEGORY,
-                                                                             createSubCategoryRequestDto.getFile(),
-                                                                             createSubCategoryRequestDto.getSubCategoryName());
+            MediaResponseDto mediaResponseDto = mediaService.saveSinglemedia(
+                    newSavedSubCategory.getId(),
+                    EntityType.SUBCATEGORY,
+                    createSubCategoryRequestDto.getFile(),
+                    createSubCategoryRequestDto.getSubCategoryName());
 
-            newSavedSubCategory.setImageUrl(imageResponseDto.getUrl());
+            newSavedSubCategory.setImageUrl(mediaResponseDto.getUrl());
         }
 
 
@@ -165,9 +172,11 @@ public class SubCategoryServiceImpl implements SubCategoryService {
     }
 
     @Override
-    public CommonResponseDto getSubCategoriesWithCategoryId(CategoryResponseDto categoryResponseDto) {
+    public CommonResponseDto getSubCategoriesWithCategoryId(
+            CategoryResponseDto categoryResponseDto) {
 
-        Optional<Category> existingCategoryOptional = categoryRepo.findById(categoryResponseDto.getId());
+        Optional<Category> existingCategoryOptional = categoryRepo.findById(
+                categoryResponseDto.getId());
 
         if (existingCategoryOptional.isPresent()) {
             Category existingCategory = existingCategoryOptional.get();
@@ -195,7 +204,8 @@ public class SubCategoryServiceImpl implements SubCategoryService {
             return CommonResponseDto
                     .builder()
                     .message("Success")
-                    .data(Map.of("results", subCategoryDtoList, "categoryName", existingCategory.getCategoryName()))
+                    .data(Map.of("results", subCategoryDtoList, "categoryName",
+                                 existingCategory.getCategoryName()))
                     .success(true)
                     .build();
 
@@ -211,7 +221,8 @@ public class SubCategoryServiceImpl implements SubCategoryService {
             Optional<SubCategory> existingSubCategory = subCategoryRepo.findById(subCategoryId);
 
             if (existingSubCategory.isEmpty()) {
-                throw new ApplicationException("404", "SubCategory not found", HttpStatus.NOT_FOUND);
+                throw new ApplicationException("404", "SubCategory not found",
+                                               HttpStatus.NOT_FOUND);
             }
 
             subCategoryRepo.deleteById(subCategoryId);
@@ -225,7 +236,8 @@ public class SubCategoryServiceImpl implements SubCategoryService {
 
         } catch (DataAccessException ex) {
             ColorLogger.logError(ex.getMessage());
-            throw new ApplicationException("500", ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ApplicationException("500", ex.getMessage(),
+                                           HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }

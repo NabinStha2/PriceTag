@@ -1,13 +1,11 @@
 package com.example.pricetag.features.category.entity;
 
+import com.example.pricetag.entity.BaseEntity;
 import com.example.pricetag.features.subcategory.entity.SubCategory;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,11 +26,7 @@ import java.util.List;
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"name"})
         })
-public class Category {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Category extends BaseEntity {
 
     @Column(name = "name",
             nullable = false,
@@ -59,12 +53,4 @@ public class Category {
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
-    @CreationTimestamp
-    @Column(updatable = false,
-            name = "created_at")
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 }

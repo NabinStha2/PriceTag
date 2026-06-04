@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ImageResponseDto {
+public class MediaResponseDto {
     private Long attachmentId;
     private Long mediaAssetId;
     private String url;

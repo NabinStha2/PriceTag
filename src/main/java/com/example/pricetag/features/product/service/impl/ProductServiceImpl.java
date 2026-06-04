@@ -5,12 +5,9 @@ import com.example.pricetag.dto.PaginatedResponseDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.entity.CartItem;
-import com.example.pricetag.enums.ImageType;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.category.repository.CategoryRepo;
-import com.example.pricetag.features.image.entity.Image;
-import com.example.pricetag.features.image.service.ImageService;
 import com.example.pricetag.features.product.dto.request.CreateProductRequestDto;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
 import com.example.pricetag.features.product.dto.response.SingleProductDetailsResponseDto;
@@ -43,10 +40,11 @@ public class ProductServiceImpl implements ProductService {
     private final SubCategoryRepo subCategoryRepo;
     private final CartItemRepo cartItemRepo;
     private final ProductMapper productMapper;
-    private final ImageService imageService;
+//    private final ImageService imageService;
 
     private static Product createNewProduct(CreateProductRequestDto createProductRequestDto,
-                                            SubCategory filteredSubCategory, Category category, String slug) {
+                                            SubCategory filteredSubCategory, Category category,
+                                            String slug) {
         Product newProduct = new Product();
         newProduct.setCategory(category);
         newProduct.setSubCategory(filteredSubCategory);
@@ -80,17 +78,20 @@ public class ProductServiceImpl implements ProductService {
         if (createProductRequestDto.getName() == null || createProductRequestDto
                 .getName()
                 .isBlank()) {
-            throw new ApplicationException("400", "Product name is required", HttpStatus.BAD_REQUEST);
+            throw new ApplicationException("400", "Product name is required",
+                                           HttpStatus.BAD_REQUEST);
         }
 
         if (createProductRequestDto.getDescription() == null || createProductRequestDto
                 .getDescription()
                 .isBlank()) {
-            throw new ApplicationException("400", "Product description is required", HttpStatus.BAD_REQUEST);
+            throw new ApplicationException("400", "Product description is required",
+                                           HttpStatus.BAD_REQUEST);
         }
 
         if (createProductRequestDto.getBasePrice() == null) {
-            throw new ApplicationException("400", "Product base price is required", HttpStatus.BAD_REQUEST);
+            throw new ApplicationException("400", "Product base price is required",
+                                           HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -120,23 +121,27 @@ public class ProductServiceImpl implements ProductService {
 
         String slug = createSlug(createProductRequestDto.getSlug());
         if (slug.isBlank()) {
-            throw new ApplicationException("400", "Product slug is invalid", HttpStatus.BAD_REQUEST);
+            throw new ApplicationException("400", "Product slug is invalid",
+                                           HttpStatus.BAD_REQUEST);
         }
 
         if (productRepo.existsBySlug(slug)) {
-            throw new ApplicationException("409", "Product slug already exists", HttpStatus.CONFLICT);
+            throw new ApplicationException("409", "Product slug already exists",
+                                           HttpStatus.CONFLICT);
         }
 
         return slug;
     }
 
     @Override
-    public CommonResponseDto<List<ProductResponseDto>> getProductsWithSubCategoryId(SubCategoryDto subCategoryDto,
-                                                                                    PaginationDto paginationDto) {
+    public CommonResponseDto<List<ProductResponseDto>> getProductsWithSubCategoryId(
+            SubCategoryDto subCategoryDto,
+            PaginationDto paginationDto) {
         Pageable pageable = PageableBuilder.buildPageable(paginationDto);
         if (subCategoryRepo.existsSubCategoryById(subCategoryDto.getId())) {
-            Page<Product> existingProducts = productRepo.findAllBySubCategoryIdAndIsActiveTrue(subCategoryDto.getId(),
-                                                                                               pageable);
+            Page<Product> existingProducts = productRepo.findAllBySubCategoryIdAndIsActiveTrue(
+                    subCategoryDto.getId(),
+                    pageable);
             List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
                     existingProducts.getContent());
 
@@ -155,7 +160,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public CommonResponseDto<ProductResponseDto> createProduct(CreateProductRequestDto createProductRequestDto) {
+    public CommonResponseDto<ProductResponseDto> createProduct(
+            CreateProductRequestDto createProductRequestDto) {
         Long categoryId = createProductRequestDto
                 .getCategory()
                 .getId();
@@ -167,20 +173,25 @@ public class ProductServiceImpl implements ProductService {
 
         Category existingCategory = categoryRepo
                 .findById(categoryId)
-                .orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException("404", "Category not found",
+                                                            HttpStatus.NOT_FOUND));
 
         SubCategory existingSubCategory = subCategoryRepo
                 .findByIdAndCategoryId(subCategoryId, categoryId)
-                .orElseThrow(() -> new ApplicationException("404", "Sub Category not found in the specified category",
+                .orElseThrow(() -> new ApplicationException("404",
+                                                            "Sub Category not found in the specified category",
                                                             HttpStatus.NOT_FOUND));
 
         String slug = resolveSlug(createProductRequestDto);
-        Product newProduct = createNewProduct(createProductRequestDto, existingSubCategory, existingCategory, slug);
+        Product newProduct = createNewProduct(createProductRequestDto, existingSubCategory,
+                                              existingCategory, slug);
         Product savedProduct = productRepo.save(newProduct);
 
-        imageService.saveMultiImages(savedProduct.getId(), ImageType.PRODUCT, createProductRequestDto.getImages());
+//        imageService.saveMultiImages(savedProduct.getId(), EntityType.PRODUCT,
+//                                     createProductRequestDto.getImages());
 
-        ProductResponseDto productResponseDto = productMapper.mapProductToProductResponseDto(savedProduct);
+        ProductResponseDto productResponseDto = productMapper.mapProductToProductResponseDto(
+                savedProduct);
 
         return CommonResponseDto
                 .<ProductResponseDto>builder()
@@ -216,11 +227,13 @@ public class ProductServiceImpl implements ProductService {
     public CommonResponseDto<SingleProductDetailsResponseDto> getSingleProduct(Long productId) {
         Product product = productRepo
                 .findByIdAndIsActiveTrue(productId)
-                .orElseThrow(() -> new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException("404", "Product not found",
+                                                            HttpStatus.NOT_FOUND));
         SingleProductDetailsResponseDto productDetailsResponseDto = productMapper.mapProductToSingleProductDetailsResponseDto(
                 product);
-        List<Image> productImages = imageService.getImages(productId, ImageType.PRODUCT);
-        productDetailsResponseDto.setImageUrl(productMapper.mapImagesToImageResponseDtoList(productImages));
+//        List<MediaAsset> productMediaAssets = imageService.getImages(productId, EntityType.PRODUCT);
+//        productDetailsResponseDto.setImageUrl(productMapper.mapImagesToImageResponseDtoList(
+//                productMediaAssets));
 
         return CommonResponseDto
                 .<SingleProductDetailsResponseDto>builder()
@@ -234,7 +247,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public CommonResponseDto<List<ProductResponseDto>> getSearchProductsWithSubCategoryIdAndName(
-            SubCategoryDto subCategoryDto, PaginationDto paginationDto, String name) throws ApplicationException {
+            SubCategoryDto subCategoryDto, PaginationDto paginationDto, String name)
+            throws ApplicationException {
         Pageable pageable = PageableBuilder.buildPageable(paginationDto);
         if (subCategoryRepo.existsSubCategoryById(subCategoryDto.getId())) {
             Page<Product> productsList = productRepo.findAllBySubCategoryIdAndNameContainingIgnoreCase(
@@ -260,7 +274,8 @@ public class ProductServiceImpl implements ProductService {
     public CommonResponseDto<Void> deleteProductById(Long productId) {
         Product existingProduct = productRepo
                 .findByIdAndIsActiveTrue(productId)
-                .orElseThrow(() -> new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException("404", "Product not found",
+                                                            HttpStatus.NOT_FOUND));
 //            product.getImages()
 //                    .forEach(image -> cloudinaryService.deleteFile(image.getPublicId(), "pricetag/" + product.getCategory()
 //                            .getCategoryName() + "/" + product.getSubCategory().getSubCategoryName()));
@@ -286,10 +301,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public CommonResponseDto<ProductResponseDto> editProduct(CreateProductRequestDto createProductRequestDto) {
+    public CommonResponseDto<ProductResponseDto> editProduct(
+            CreateProductRequestDto createProductRequestDto) {
         Product existingProduct = productRepo
                 .findByIdAndIsActiveTrue(createProductRequestDto.getProductId())
-                .orElseThrow(() -> new ApplicationException("404", "Product not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException("404", "Product not found",
+                                                            HttpStatus.NOT_FOUND));
 
         existingProduct.setName(createProductRequestDto.getName());
         existingProduct.setDescription(createProductRequestDto.getDescription());
@@ -301,7 +318,8 @@ public class ProductServiceImpl implements ProductService {
                                                 .findById(createProductRequestDto
                                                                   .getCategory()
                                                                   .getId())
-                                                .orElseThrow(() -> new ApplicationException("404", "Category not found",
+                                                .orElseThrow(() -> new ApplicationException("404",
+                                                                                            "Category not found",
                                                                                             HttpStatus.NOT_FOUND)));
         }
         if (createProductRequestDto.getSubCategory() != null && createProductRequestDto
@@ -311,9 +329,10 @@ public class ProductServiceImpl implements ProductService {
                                                    .findById(createProductRequestDto
                                                                      .getSubCategory()
                                                                      .getId())
-                                                   .orElseThrow(() -> new ApplicationException("404",
-                                                                                               "Sub Category not found",
-                                                                                               HttpStatus.NOT_FOUND)));
+                                                   .orElseThrow(
+                                                           () -> new ApplicationException("404",
+                                                                                          "Sub Category not found",
+                                                                                          HttpStatus.NOT_FOUND)));
         }
 
         try {
@@ -326,7 +345,8 @@ public class ProductServiceImpl implements ProductService {
                     .build();
         } catch (DataAccessException e) {
             ColorLogger.logError("editProduct :: Database error :: " + e.getMessage());
-            throw new ApplicationException("500", "Database error", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ApplicationException("500", "Database error",
+                                           HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

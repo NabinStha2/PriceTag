@@ -1,7 +1,7 @@
-package com.example.pricetag.features.image.controller;
+package com.example.pricetag.features.media.controller;
 
-import com.example.pricetag.features.image.repository.ImageRepo;
-import com.example.pricetag.features.image.service.ImageService;
+import com.example.pricetag.features.media.repository.MediaAssetRepo;
+import com.example.pricetag.features.media.service.MediaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class ImageController {
 
     @Autowired
-    private ImageRepo imageRepo;
+    private MediaAssetRepo mediaAssetRepo;
 
     @Autowired
-    private ImageService imageService;
+    private MediaService mediaService;
 
 //    @PostMapping("/upload")
 //    public ResponseEntity<CommonResponseDto> upload(ImageDto imageDto) {

@@ -1,8 +1,8 @@
 package com.example.pricetag.features.product.mapper;
 
 import com.example.pricetag.features.category.mapper.CategoryMapper;
-import com.example.pricetag.features.image.dto.response.ImageResponseDto;
-import com.example.pricetag.features.image.entity.Image;
+import com.example.pricetag.features.media.dto.response.MediaResponseDto;
+import com.example.pricetag.features.media.entity.MediaAsset;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
 import com.example.pricetag.features.product.dto.response.SingleProductDetailsResponseDto;
 import com.example.pricetag.features.product.entity.Product;
@@ -25,12 +25,12 @@ public interface ProductMapper {
             ignore = true)
     SingleProductDetailsResponseDto mapProductToSingleProductDetailsResponseDto(Product product);
 
-    List<ImageResponseDto> mapImagesToImageResponseDtoList(List<Image> images);
+    List<MediaResponseDto> mapImagesToImageResponseDtoList(List<MediaAsset> mediaAssets);
 
-    @Mapping(source = "imageUrl",
+    @Mapping(source = "url",
             target = "url")
-    @Mapping(source = "imagePublicId",
+    @Mapping(source = "publicId",
             target = "publicId")
-    ImageResponseDto mapImageToImageResponseDto(Image image);
+    MediaResponseDto mapImageToImageResponseDto(MediaAsset mediaAsset);
 
 }

@@ -1,13 +1,11 @@
 package com.example.pricetag.features.subcategory.entity;
 
+import com.example.pricetag.entity.BaseEntity;
 import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,11 +22,7 @@ import java.util.List;
         uniqueConstraints = {@UniqueConstraint(columnNames = {"category_id", "name", "is_deleted"})})
 @AllArgsConstructor
 @NoArgsConstructor
-public class SubCategory {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class SubCategory extends BaseEntity {
 
     @Column(name = "name",
             nullable = false)
@@ -54,14 +48,5 @@ public class SubCategory {
     @Builder.Default
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
-
-    @CreationTimestamp
-    @Column(updatable = false,
-            name = "created_at")
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
 }

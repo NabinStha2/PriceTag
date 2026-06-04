@@ -1,7 +1,7 @@
 package com.example.pricetag.features.category.service.impl;
 
 import com.example.pricetag.dto.CommonResponseDto;
-import com.example.pricetag.enums.ImageType;
+import com.example.pricetag.enums.EntityType;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.dto.request.CreateCategoryRequestDto;
 import com.example.pricetag.features.category.dto.request.UpdateCategoryImageRequestDto;
@@ -12,8 +12,8 @@ import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.category.mapper.CategoryMapper;
 import com.example.pricetag.features.category.repository.CategoryRepo;
 import com.example.pricetag.features.category.service.CategoryService;
-import com.example.pricetag.features.image.dto.response.ImageResponseDto;
-import com.example.pricetag.features.image.service.ImageService;
+import com.example.pricetag.features.media.dto.response.MediaResponseDto;
+import com.example.pricetag.features.media.service.MediaService;
 import com.example.pricetag.utils.ColorLogger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepo categoryRepo;
     private final CategoryMapper categoryMapper;
-    private final ImageService imageService;
+    private final MediaService mediaService;
 
     @Override
     public CommonResponseDto<List<CategoryResponseDto>> getAllCategories() {
@@ -59,11 +59,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CommonResponseDto<SingleCategoryDetailsResponseDto> getCategoryByIdWithSubCategories(Long id) {
+    public CommonResponseDto<SingleCategoryDetailsResponseDto> getCategoryByIdWithSubCategories(
+            Long id) {
 
         Category existingCategory = categoryRepo
                 .findWithSubCategoriesById(id)
-                .orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException("404", "Category not found",
+                                                            HttpStatus.NOT_FOUND));
 
         SingleCategoryDetailsResponseDto singleCategoryDetailsResponseDto = categoryMapper.mapCategoryToSingleCategoryDetailsResponseDto(
                 existingCategory);
@@ -80,13 +82,15 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional
     @Override
-    public CommonResponseDto<Void> createCategory(CreateCategoryRequestDto createCategoryRequestDto) {
+    public CommonResponseDto<Void> createCategory(
+            CreateCategoryRequestDto createCategoryRequestDto) {
 
         if (categoryRepo.existsByCategoryName(createCategoryRequestDto.getName())) {
             throw new ApplicationException("409", "Category already exists", HttpStatus.CONFLICT);
         }
 
-        Category newCategory = categoryMapper.mapCreateCategoryRequestDtoToCategory(createCategoryRequestDto);
+        Category newCategory = categoryMapper.mapCreateCategoryRequestDtoToCategory(
+                createCategoryRequestDto);
 
         Category newSavedCategory = categoryRepo.save(newCategory);
 
@@ -94,12 +98,13 @@ public class CategoryServiceImpl implements CategoryService {
                 .getFile()
                 .isEmpty()) {
 
-            ImageResponseDto imageResponseDto = imageService.saveSingleImage(newSavedCategory.getId(),
-                                                                             ImageType.CATEGORY,
-                                                                             createCategoryRequestDto.getFile(),
-                                                                             createCategoryRequestDto.getName());
+            MediaResponseDto mediaResponseDto = mediaService.saveSinglemedia(
+                    newSavedCategory.getId(),
+                    EntityType.CATEGORY,
+                    createCategoryRequestDto.getFile(),
+                    createCategoryRequestDto.getName());
 
-            newSavedCategory.setImageUrl(imageResponseDto.getUrl());
+            newSavedCategory.setImageUrl(mediaResponseDto.getUrl());
         }
 
 
@@ -113,10 +118,12 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CommonResponseDto<Void> updateCategory(UpdateCategoryRequestDto updateCategoryRequestDto) {
+    public CommonResponseDto<Void> updateCategory(
+            UpdateCategoryRequestDto updateCategoryRequestDto) {
         Category existingCategory = categoryRepo
                 .findByIdAndIsActiveTrue(updateCategoryRequestDto.getId())
-                .orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException("404", "Category not found",
+                                                            HttpStatus.NOT_FOUND));
 
         if (updateCategoryRequestDto.getCategoryName() != null) {
             existingCategory.setCategoryName(updateCategoryRequestDto.getCategoryName());
@@ -154,20 +161,23 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CommonResponseDto<Void> updateCategoryImage(UpdateCategoryImageRequestDto updateCategoryImageRequestDto) {
+    public CommonResponseDto<Void> updateCategoryImage(
+            UpdateCategoryImageRequestDto updateCategoryImageRequestDto) {
         Category existingCategory = categoryRepo
                 .findByIdAndIsActiveTrue(updateCategoryImageRequestDto.getEntityId())
-                .orElseThrow(() -> new ApplicationException("404", "Category not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException("404", "Category not found",
+                                                            HttpStatus.NOT_FOUND));
 
-        imageService.deleteImages(updateCategoryImageRequestDto.getEntityId(),
+        mediaService.deletemedias(updateCategoryImageRequestDto.getEntityId(),
                                   updateCategoryImageRequestDto.getImageType());
 
-        ImageResponseDto imageResponseDto = imageService.saveSingleImage(updateCategoryImageRequestDto.getEntityId(),
-                                                                         updateCategoryImageRequestDto.getImageType(),
-                                                                         updateCategoryImageRequestDto.getFile(),
-                                                                         existingCategory.getCategoryName());
+        MediaResponseDto mediaResponseDto = mediaService.saveSinglemedia(
+                updateCategoryImageRequestDto.getEntityId(),
+                updateCategoryImageRequestDto.getImageType(),
+                updateCategoryImageRequestDto.getFile(),
+                existingCategory.getCategoryName());
 
-        existingCategory.setImageUrl(imageResponseDto.getUrl());
+        existingCategory.setImageUrl(mediaResponseDto.getUrl());
         categoryRepo.save(existingCategory); //Updating the existing category with new image_url
 
         return CommonResponseDto

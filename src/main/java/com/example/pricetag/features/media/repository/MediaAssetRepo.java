@@ -7,14 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface MediaRepo extends JpaRepository<MediaAsset, Long> {
+public interface MediaAssetRepo extends JpaRepository<MediaAsset, Long> {
 
     Optional<MediaAsset> findByHashAndIsDeletedFalse(String hash);
 
     Optional<MediaAsset> findByPublicIdAndIsActiveTrue(String publicId);
-
-//    List<MediaAsset> findAllByEntityIdAndEntityType(Long entityId, EntityType entityType);
-//
-//    void deleteAllByEntityIdAndEntityType(Long entityId, EntityType entityType);
-
+    
 }
