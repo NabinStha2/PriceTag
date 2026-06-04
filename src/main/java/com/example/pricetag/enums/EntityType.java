@@ -1,7 +1,9 @@
 package com.example.pricetag.enums;
 
-public enum ImageType {
+public enum EntityType {
     PRODUCT,
     CATEGORY,
-    SUBCATEGORY
+    SUBCATEGORY,
+    VARIANT
+
 }
