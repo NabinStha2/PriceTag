@@ -3,12 +3,12 @@ package com.example.pricetag.features.product.controller;
 import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.SubCategoryDto;
-import com.example.pricetag.features.category.dto.response.CategoryResponseDto;
 import com.example.pricetag.features.product.dto.request.CreateProductRequestDto;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
 import com.example.pricetag.features.product.dto.response.SingleProductDetailsResponseDto;
 import com.example.pricetag.features.product.service.ProductService;
 import com.example.pricetag.utils.ColorLogger;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,7 +55,8 @@ public class ProductController {
                 .order(order)
                 .build();
 //        ColorLogger.logInfo("paginationDto :: " + paginationDto.toString());
-        return ResponseEntity.ok(productService.getProductsWithSubCategoryId(subCategoryDto, paginationDto));
+        return ResponseEntity.ok(
+                productService.getProductsWithSubCategoryId(subCategoryDto, paginationDto));
     }
 
     @PostMapping("/category/{categoryId}/subcategory/{subCategoryId}/add")
@@ -64,16 +65,11 @@ public class ProductController {
             Long categoryId,
             @PathVariable
             Long subCategoryId,
+            @Valid
             @ModelAttribute
             CreateProductRequestDto createProductRequestDto) {
-        createProductRequestDto.setCategory(CategoryResponseDto
-                                                    .builder()
-                                                    .id(categoryId)
-                                                    .build());
-        createProductRequestDto.setSubCategory(SubCategoryDto
-                                                       .builder()
-                                                       .id(subCategoryId)
-                                                       .build());
+        createProductRequestDto.setCategoryId(categoryId);
+        createProductRequestDto.setSubCategoryId(subCategoryId);
         return ResponseEntity.ok(productService.createProduct(createProductRequestDto));
     }
 
@@ -153,7 +149,8 @@ public class ProductController {
                 .build();
         ColorLogger.logInfo("paginationDto :: " + paginationDto.toString());
         return ResponseEntity.ok(
-                productService.getSearchProductsWithSubCategoryIdAndName(subCategoryDto, paginationDto, name));
+                productService.getSearchProductsWithSubCategoryIdAndName(subCategoryDto,
+                                                                         paginationDto, name));
     }
 
     @DeleteMapping("/{productId}")

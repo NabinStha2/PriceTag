@@ -20,7 +20,7 @@ public class ProductResponseDto {
     private String slug;
     private String description;
     private String shortDescription;
-    private String imageUrl;
+    private String primaryImageUrl;
     private BigDecimal basePrice;
     private BigDecimal discountedPrice;
     private String brand;

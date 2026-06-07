@@ -62,9 +62,11 @@ public class Product extends BaseEntity {
     @Column(name = "brand")
     private String brand;
 
+    @Builder.Default
     @Column(name = "total_rating")
     private double totalRating = 0;
 
+    @Builder.Default
     @Column(name = "total_review")
     private Integer totalReview = 0;
 

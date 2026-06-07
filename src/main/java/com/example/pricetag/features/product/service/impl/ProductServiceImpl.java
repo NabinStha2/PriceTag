@@ -56,7 +56,7 @@ public class ProductServiceImpl implements ProductService {
         newProduct.setBasePrice(createProductRequestDto.getBasePrice());
         newProduct.setDiscountedPrice(createProductRequestDto.getDiscountedPrice());
 
-//        if (productDto.getVariants() != null) {
+        //        if (productDto.getVariants() != null) {
 //            productDto
 //                    .getVariants()
 //                    .forEach(variant -> variant.setProduct(newProduct));
@@ -135,13 +135,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public CommonResponseDto<List<ProductResponseDto>> getProductsWithSubCategoryId(
-            SubCategoryDto subCategoryDto,
-            PaginationDto paginationDto) {
+            SubCategoryDto subCategoryDto, PaginationDto paginationDto) {
         Pageable pageable = PageableBuilder.buildPageable(paginationDto);
         if (subCategoryRepo.existsSubCategoryById(subCategoryDto.getId())) {
             Page<Product> existingProducts = productRepo.findAllBySubCategoryIdAndIsActiveTrue(
-                    subCategoryDto.getId(),
-                    pageable);
+                    subCategoryDto.getId(), pageable);
             List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
                     existingProducts.getContent());
 
@@ -162,14 +160,10 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public CommonResponseDto<ProductResponseDto> createProduct(
             CreateProductRequestDto createProductRequestDto) {
-        Long categoryId = createProductRequestDto
-                .getCategory()
-                .getId();
-        Long subCategoryId = createProductRequestDto
-                .getSubCategory()
-                .getId();
+        Long categoryId = createProductRequestDto.getCategoryId();
+        Long subCategoryId = createProductRequestDto.getSubCategoryId();
 
-        validateCreateProduct(createProductRequestDto);
+//        validateCreateProduct(createProductRequestDto);
 
         Category existingCategory = categoryRepo
                 .findById(categoryId)
@@ -311,24 +305,17 @@ public class ProductServiceImpl implements ProductService {
         existingProduct.setName(createProductRequestDto.getName());
         existingProduct.setDescription(createProductRequestDto.getDescription());
 
-        if (createProductRequestDto.getCategory() != null && createProductRequestDto
-                                                                     .getCategory()
-                                                                     .getId() != null) {
+        if (createProductRequestDto.getCategoryId() != null) {
             existingProduct.setCategory(categoryRepo
-                                                .findById(createProductRequestDto
-                                                                  .getCategory()
-                                                                  .getId())
+                                                .findById(createProductRequestDto.getCategoryId())
                                                 .orElseThrow(() -> new ApplicationException("404",
                                                                                             "Category not found",
                                                                                             HttpStatus.NOT_FOUND)));
         }
-        if (createProductRequestDto.getSubCategory() != null && createProductRequestDto
-                                                                        .getSubCategory()
-                                                                        .getId() != null) {
+        if (createProductRequestDto.getSubCategoryId() != null) {
             existingProduct.setSubCategory(subCategoryRepo
-                                                   .findById(createProductRequestDto
-                                                                     .getSubCategory()
-                                                                     .getId())
+                                                   .findById(
+                                                           createProductRequestDto.getSubCategoryId())
                                                    .orElseThrow(
                                                            () -> new ApplicationException("404",
                                                                                           "Sub Category not found",

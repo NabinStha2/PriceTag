@@ -18,6 +18,6 @@ public class CommonResponseDto<T> {
     private T data;               // actual payload (Product, List<Order>, etc.)
     private Boolean success;      // true if operation succeeded
     private Integer status;       // HTTP status code
-    private PaginatedResponseDto pagination;
-    private Map<String, Object> meta; // optional metadata (pagination, filters, etc.)
+    private PaginatedResponseDto pagination; // for pagination responses
+    private Map<String, Object> meta; // optional metadata for error responses
 }
