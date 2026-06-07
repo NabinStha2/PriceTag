@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 public class MediaServiceImpl implements MediaService {
 
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    private static final Set<String> ALLOWED_MIME_TYPES = Set.of("media/jpeg", "media/png",
-                                                                 "media/webp", "media/gif");
+    private static final Set<String> ALLOWED_MIME_TYPES = Set.of("image/jpeg", "image/png",
+                                                                 "image/webp", "image/gif");
 
     private final CloudinaryService cloudinaryService;
     private final MediaAssetRepo mediaAssetRepository;
@@ -82,7 +82,8 @@ public class MediaServiceImpl implements MediaService {
 
     @Override
     @Transactional
-    public void saveMultimedias(Long entityId, EntityType entityType, MultipartFile[] files) {
+    public void saveMultimedias(Long entityId, EntityType entityType, MultipartFile[] files,
+                                String entityName) {
         if (files == null || files.length == 0) return;
 
         // validate all first
@@ -98,9 +99,7 @@ public class MediaServiceImpl implements MediaService {
             for (MultipartFile file : files) {
                 if (file == null || file.isEmpty()) continue;
                 MediaRole role = displayOrder == 0 ? MediaRole.MAIN : MediaRole.GALLERY;
-                MediaAsset asset = findOrUploadAsset(file, entityType, entityType
-                        .name()
-                        .toLowerCase());
+                MediaAsset asset = findOrUploadAsset(file, entityType, entityName);
                 uploadedPublicIds.add(asset.getPublicId());
                 MediaAttachment attachment = MediaAttachment
                         .builder()
@@ -117,7 +116,7 @@ public class MediaServiceImpl implements MediaService {
                 displayOrder++;
             }
         } catch (Exception e) {
-            // rollback uploaded assets
+            // roll back uploaded assets
             uploadedPublicIds.forEach(publicId -> {
                 try {
                     cloudinaryService.deleteFile(publicId);
@@ -144,7 +143,7 @@ public class MediaServiceImpl implements MediaService {
         });
         mediaAttachmentRepository.saveAll(existing);
 
-        saveMultimedias(productId, entityType, files);
+        saveMultimedias(productId, entityType, files, productId.toString());
     }
 
     @Override
@@ -169,6 +168,19 @@ public class MediaServiceImpl implements MediaService {
                 .stream()
                 .map(mediaMapper::mapMediaAttachmentToMediaResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MediaResponseDto getMainMedia(Long entityId, EntityType type) {
+        MediaAttachment existing = mediaAttachmentRepository
+                .findFirstByEntityTypeAndEntityIdAndIsActiveTrueOrderByDisplayOrderAsc(type,
+                                                                                       entityId)
+                .orElseThrow(() -> new ApplicationException("404", "No media found for entityId=" +
+                                                                   entityId + " and type=" + type,
+                                                            HttpStatus.NOT_FOUND));
+
+        return mediaMapper.mapMediaAttachmentToMediaResponseDto(existing);
     }
 
     /* -------------------- Helper methods -------------------- */

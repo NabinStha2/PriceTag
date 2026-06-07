@@ -4,10 +4,11 @@ import com.example.pricetag.dto.CommonResponseDto;
 import com.example.pricetag.dto.PaginatedResponseDto;
 import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.SubCategoryDto;
-import com.example.pricetag.entity.CartItem;
+import com.example.pricetag.enums.EntityType;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.category.repository.CategoryRepo;
+import com.example.pricetag.features.media.service.MediaService;
 import com.example.pricetag.features.product.dto.request.CreateProductRequestDto;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
 import com.example.pricetag.features.product.dto.response.SingleProductDetailsResponseDto;
@@ -40,6 +41,7 @@ public class ProductServiceImpl implements ProductService {
     private final SubCategoryRepo subCategoryRepo;
     private final CartItemRepo cartItemRepo;
     private final ProductMapper productMapper;
+    private final MediaService mediaService;
 //    private final ImageService imageService;
 
     private static Product createNewProduct(CreateProductRequestDto createProductRequestDto,
@@ -133,88 +135,6 @@ public class ProductServiceImpl implements ProductService {
         return slug;
     }
 
-    @Override
-    public CommonResponseDto<List<ProductResponseDto>> getProductsWithSubCategoryId(
-            SubCategoryDto subCategoryDto, PaginationDto paginationDto) {
-        Pageable pageable = PageableBuilder.buildPageable(paginationDto);
-        if (subCategoryRepo.existsSubCategoryById(subCategoryDto.getId())) {
-            Page<Product> existingProducts = productRepo.findAllBySubCategoryIdAndIsActiveTrue(
-                    subCategoryDto.getId(), pageable);
-            List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
-                    existingProducts.getContent());
-
-            return CommonResponseDto
-                    .<List<ProductResponseDto>>builder()
-                    .message("Products fetch Successfully")
-                    .data(productResponseDtoList)
-                    .pagination(PaginatedResponseDto.from(existingProducts))
-                    .success(true)
-                    .status(HttpStatus.OK.value())
-                    .build();
-        } else {
-            throw new ApplicationException("404", "Sub Category not found", HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @Override
-    @Transactional
-    public CommonResponseDto<ProductResponseDto> createProduct(
-            CreateProductRequestDto createProductRequestDto) {
-        Long categoryId = createProductRequestDto.getCategoryId();
-        Long subCategoryId = createProductRequestDto.getSubCategoryId();
-
-//        validateCreateProduct(createProductRequestDto);
-
-        Category existingCategory = categoryRepo
-                .findById(categoryId)
-                .orElseThrow(() -> new ApplicationException("404", "Category not found",
-                                                            HttpStatus.NOT_FOUND));
-
-        SubCategory existingSubCategory = subCategoryRepo
-                .findByIdAndCategoryId(subCategoryId, categoryId)
-                .orElseThrow(() -> new ApplicationException("404",
-                                                            "Sub Category not found in the specified category",
-                                                            HttpStatus.NOT_FOUND));
-
-        String slug = resolveSlug(createProductRequestDto);
-        Product newProduct = createNewProduct(createProductRequestDto, existingSubCategory,
-                                              existingCategory, slug);
-        Product savedProduct = productRepo.save(newProduct);
-
-//        imageService.saveMultiImages(savedProduct.getId(), EntityType.PRODUCT,
-//                                     createProductRequestDto.getImages());
-
-        ProductResponseDto productResponseDto = productMapper.mapProductToProductResponseDto(
-                savedProduct);
-
-        return CommonResponseDto
-                .<ProductResponseDto>builder()
-                .data(productResponseDto)
-                .message("Product has been created successfully")
-                .status(HttpStatus.CREATED.value())
-                .success(true)
-                .build();
-    }
-
-    @Override
-    public CommonResponseDto<List<ProductResponseDto>> getAllProducts(PaginationDto paginationDto) {
-        Pageable pageable = PageableBuilder.buildPageable(paginationDto);
-
-        Page<Product> existingProductList = productRepo.findAllByIsActiveTrue(pageable);
-
-        List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
-                existingProductList.getContent());
-
-        return CommonResponseDto
-                .<List<ProductResponseDto>>builder()
-                .message("Products fetched successfully")
-                .data(productResponseDtoList)
-                .pagination(PaginatedResponseDto.from(existingProductList))
-                .success(true)
-                .status(HttpStatus.OK.value())
-                .build();
-
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -238,60 +158,6 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
-
-    @Override
-    public CommonResponseDto<List<ProductResponseDto>> getSearchProductsWithSubCategoryIdAndName(
-            SubCategoryDto subCategoryDto, PaginationDto paginationDto, String name)
-            throws ApplicationException {
-        Pageable pageable = PageableBuilder.buildPageable(paginationDto);
-        if (subCategoryRepo.existsSubCategoryById(subCategoryDto.getId())) {
-            Page<Product> productsList = productRepo.findAllBySubCategoryIdAndNameContainingIgnoreCase(
-                    subCategoryDto.getId(), pageable, name);
-
-            List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
-                    productsList.getContent());
-
-            return CommonResponseDto
-                    .<List<ProductResponseDto>>builder()
-                    .message("Search products fetch Successfully")
-                    .data(productResponseDtoList)
-                    .pagination(PaginatedResponseDto.from(productsList))
-                    .status(HttpStatus.OK.value())
-                    .success(true)
-                    .build();
-        } else {
-            throw new ApplicationException("404", "Sub Category not found", HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @Override
-    public CommonResponseDto<Void> deleteProductById(Long productId) {
-        Product existingProduct = productRepo
-                .findByIdAndIsActiveTrue(productId)
-                .orElseThrow(() -> new ApplicationException("404", "Product not found",
-                                                            HttpStatus.NOT_FOUND));
-//            product.getImages()
-//                    .forEach(image -> cloudinaryService.deleteFile(image.getPublicId(), "pricetag/" + product.getCategory()
-//                            .getCategoryName() + "/" + product.getSubCategory().getSubCategoryName()));
-
-        CartItem existingCartItem = cartItemRepo.findByProductId(productId);
-        if (existingCartItem != null) {
-            cartItemRepo.delete(existingCartItem);
-        }
-
-//        productRepo.delete(existingProduct);
-
-        existingProduct.setIsActive(false);
-        existingProduct.setIsDeleted(true);
-        productRepo.save(existingProduct);
-
-        return CommonResponseDto
-                .<Void>builder()
-                .message("Product has been deleted successfully")
-                .status(HttpStatus.OK.value())
-                .success(true)
-                .build();
-    }
 
     @Override
     @Transactional
@@ -335,6 +201,146 @@ public class ProductServiceImpl implements ProductService {
             throw new ApplicationException("500", "Database error",
                                            HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+
+    @Override
+    @Transactional
+    public CommonResponseDto<ProductResponseDto> createProduct(
+            CreateProductRequestDto createProductRequestDto) {
+        Long categoryId = createProductRequestDto.getCategoryId();
+        Long subCategoryId = createProductRequestDto.getSubCategoryId();
+
+//        validateCreateProduct(createProductRequestDto);
+
+        Category existingCategory = categoryRepo
+                .findById(categoryId)
+                .orElseThrow(() -> new ApplicationException("404", "Category not found",
+                                                            HttpStatus.NOT_FOUND));
+
+        SubCategory existingSubCategory = subCategoryRepo
+                .findByIdAndCategoryId(subCategoryId, categoryId)
+                .orElseThrow(() -> new ApplicationException("404",
+                                                            "Sub Category not found in the specified category",
+                                                            HttpStatus.NOT_FOUND));
+
+        String slug = resolveSlug(createProductRequestDto);
+        Product newProduct = createNewProduct(createProductRequestDto, existingSubCategory,
+                                              existingCategory, slug);
+        Product savedProduct = productRepo.save(newProduct);
+
+        mediaService.saveMultimedias(savedProduct.getId(), EntityType.PRODUCT,
+                                     createProductRequestDto.getImages(), savedProduct
+                                             .getId()
+                                             .toString());
+
+        savedProduct.setPrimaryImageUrl(mediaService
+                                                .getmedias(savedProduct.getId(), EntityType.PRODUCT)
+                                                .getFirst()
+                                                .getUrl());
+
+        ProductResponseDto productResponseDto = productMapper.mapProductToProductResponseDto(
+                savedProduct);
+
+        return CommonResponseDto
+                .<ProductResponseDto>builder()
+                .data(productResponseDto)
+                .message("Product has been created successfully")
+                .status(HttpStatus.CREATED.value())
+                .success(true)
+                .build();
+    }
+
+    @Override
+    public CommonResponseDto<List<ProductResponseDto>> getProductsWithSubCategoryId(
+            SubCategoryDto subCategoryDto, PaginationDto paginationDto) {
+        Pageable pageable = PageableBuilder.buildPageable(paginationDto);
+        if (subCategoryRepo.existsSubCategoryById(subCategoryDto.getId())) {
+            Page<Product> existingProducts = productRepo.findAllBySubCategoryIdAndIsActiveTrue(
+                    subCategoryDto.getId(), pageable);
+            List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
+                    existingProducts.getContent());
+
+            return CommonResponseDto
+                    .<List<ProductResponseDto>>builder()
+                    .message("Products fetch Successfully")
+                    .data(productResponseDtoList)
+                    .pagination(PaginatedResponseDto.from(existingProducts))
+                    .success(true)
+                    .status(HttpStatus.OK.value())
+                    .build();
+        } else {
+            throw new ApplicationException("404", "Sub Category not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+    @Override
+    public CommonResponseDto<List<ProductResponseDto>> getAllProducts(PaginationDto paginationDto) {
+        Pageable pageable = PageableBuilder.buildPageable(paginationDto);
+
+        Page<Product> existingProductList = productRepo.findAllByIsActiveTrue(pageable);
+
+        List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
+                existingProductList.getContent());
+
+        return CommonResponseDto
+                .<List<ProductResponseDto>>builder()
+                .message("Products fetched successfully")
+                .data(productResponseDtoList)
+                .pagination(PaginatedResponseDto.from(existingProductList))
+                .success(true)
+                .status(HttpStatus.OK.value())
+                .build();
+
+    }
+
+    @Override
+    public CommonResponseDto<List<ProductResponseDto>> getSearchProductsWithSubCategoryIdAndName(
+            SubCategoryDto subCategoryDto, PaginationDto paginationDto, String name) {
+        Pageable pageable = PageableBuilder.buildPageable(paginationDto);
+        if (subCategoryRepo.existsSubCategoryById(subCategoryDto.getId())) {
+            Page<Product> productsList = productRepo.findAllBySubCategoryIdAndNameContainingIgnoreCase(
+                    subCategoryDto.getId(), pageable, name);
+
+            List<ProductResponseDto> productResponseDtoList = productMapper.mapProductListToProductResponseDtoList(
+                    productsList.getContent());
+
+            return CommonResponseDto
+                    .<List<ProductResponseDto>>builder()
+                    .message("Search products fetch Successfully")
+                    .data(productResponseDtoList)
+                    .pagination(PaginatedResponseDto.from(productsList))
+                    .status(HttpStatus.OK.value())
+                    .success(true)
+                    .build();
+        } else {
+            throw new ApplicationException("404", "Sub Category not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+    @Override
+    public CommonResponseDto<Void> deleteProductById(Long productId) {
+        Product existingProduct = productRepo
+                .findByIdAndIsActiveTrue(productId)
+                .orElseThrow(() -> new ApplicationException("404", "Product not found",
+                                                            HttpStatus.NOT_FOUND));
+
+//            product.getImages()
+//                    .forEach(image -> cloudinaryService.deleteFile(image.getPublicId(), "pricetag/" + product.getCategory()
+//                            .getCategoryName() + "/" + product.getSubCategory().getSubCategoryName()));
+
+        existingProduct.setIsActive(false);
+        existingProduct.setIsDeleted(true);
+        productRepo.save(existingProduct);
+
+        return CommonResponseDto
+                .<Void>builder()
+                .message("Product has been deleted successfully")
+                .status(HttpStatus.OK.value())
+                .success(true)
+                .build();
     }
 
 

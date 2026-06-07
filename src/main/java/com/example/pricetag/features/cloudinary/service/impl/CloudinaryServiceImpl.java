@@ -23,25 +23,39 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     @Override
     public CloudinaryUploadResponse uploadFile(MultipartFile file, String folder) {
         try {
-            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), Map.of("folder", folder));
-            return CloudinaryUploadResponse.builder()
-                    .publicId(uploadResult.get("public_id").toString())
-                    .url(uploadResult.get("secure_url").toString()) // use secure_url for https
+            Map uploadResult = cloudinary
+                    .uploader()
+                    .upload(file.getBytes(), Map.of("folder", folder));
+            return CloudinaryUploadResponse
+                    .builder()
+                    .publicId(uploadResult
+                                      .get("public_id")
+                                      .toString())
+                    .url(uploadResult
+                                 .get("secure_url")
+                                 .toString()) // use secure_url for https
                     .build();
         } catch (IOException e) {
-            throw new ApplicationException("500", "Failed to upload image", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ApplicationException("500", "Failed to upload image",
+                                           HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
     public CloudinaryDeleteResponse deleteFile(String publicId) {
         try {
-            Map result = cloudinary.uploader().destroy(publicId, Map.of());
-            return CloudinaryDeleteResponse.builder()
-                    .result(result.get("result").toString())
+            Map result = cloudinary
+                    .uploader()
+                    .destroy(publicId, Map.of());
+            return CloudinaryDeleteResponse
+                    .builder()
+                    .result(result
+                                    .get("result")
+                                    .toString())
                     .build();
         } catch (IOException e) {
-            throw new ApplicationException("500", "Failed to delete image", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ApplicationException("500", "Failed to delete image",
+                                           HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

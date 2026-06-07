@@ -14,13 +14,16 @@ public interface MediaService {
     MediaResponseDto saveSinglemedia(Long entityId, EntityType entityType, MultipartFile file,
                                      String entityName);
 
-    void saveMultimedias(Long entityId, EntityType entityType, MultipartFile[] files);
+    void saveMultimedias(Long entityId, EntityType entityType, MultipartFile[] files,
+                         String entityName);
 
     void replaceProductmedias(Long productId, EntityType entityType, MultipartFile[] files);
 
     void deletemedias(Long entityId, EntityType type);
 
     List<MediaResponseDto> getmedias(Long entityId, EntityType type);
+
+    MediaResponseDto getMainMedia(Long entityId, EntityType type);
 
     Map<Long, MediaResponseDto> getPrimarymedias(List<Long> entityIds, EntityType type);
 }
