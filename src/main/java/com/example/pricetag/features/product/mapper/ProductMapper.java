@@ -21,8 +21,8 @@ public interface ProductMapper {
 
     List<ProductResponseDto> mapProductListToProductResponseDtoList(List<Product> products);
 
-    @Mapping(target = "imageUrl",
-            ignore = true)
+    //    @Mapping(target = "imageUrl",
+//            ignore = true)
     SingleProductDetailsResponseDto mapProductToSingleProductDetailsResponseDto(Product product);
 
     List<MediaResponseDto> mapImagesToImageResponseDtoList(List<MediaAsset> mediaAssets);

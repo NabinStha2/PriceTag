@@ -8,6 +8,7 @@ import com.example.pricetag.enums.EntityType;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.category.repository.CategoryRepo;
+import com.example.pricetag.features.media.dto.response.MediaResponseDto;
 import com.example.pricetag.features.media.service.MediaService;
 import com.example.pricetag.features.product.dto.request.CreateProductRequestDto;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
@@ -145,9 +146,9 @@ public class ProductServiceImpl implements ProductService {
                                                             HttpStatus.NOT_FOUND));
         SingleProductDetailsResponseDto productDetailsResponseDto = productMapper.mapProductToSingleProductDetailsResponseDto(
                 product);
-//        List<MediaAsset> productMediaAssets = imageService.getImages(productId, EntityType.PRODUCT);
-//        productDetailsResponseDto.setImageUrl(productMapper.mapImagesToImageResponseDtoList(
-//                productMediaAssets));
+
+        List<MediaResponseDto> mediaDtos = mediaService.getmedias(productId, EntityType.PRODUCT);
+        productDetailsResponseDto.setImageUrl(mediaDtos);
 
         return CommonResponseDto
                 .<SingleProductDetailsResponseDto>builder()

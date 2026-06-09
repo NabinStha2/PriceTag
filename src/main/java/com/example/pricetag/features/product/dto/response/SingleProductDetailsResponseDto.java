@@ -24,6 +24,7 @@ public class SingleProductDetailsResponseDto {
     private String slug;
     private String description;
     private String shortDescription;
+    private String primaryImageUrl; // Main image URL for quick access
     private List<MediaResponseDto> imageUrl;                   // main/primary image
     private BigDecimal basePrice;              // MRP/base price
     private BigDecimal discountedPrice;        // final / offer price if available
