@@ -13,4 +13,10 @@ public interface VariantService {
     CommonResponseDto<List<VariantResponseDto>> createVariant(
             List<VariantRequestDto> variantRequestDto,
             Long productId);
+
+    CommonResponseDto<List<VariantResponseDto>> getAllVariants();
+
+    CommonResponseDto<VariantResponseDto> getVariantById(Long variantId);
+
+    CommonResponseDto<List<VariantResponseDto>> getVariantsByProductId(Long productId);
 }

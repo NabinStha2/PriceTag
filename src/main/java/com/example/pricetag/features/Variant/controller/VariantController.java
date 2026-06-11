@@ -31,4 +31,18 @@ public class VariantController {
         return ResponseEntity.ok(variantService.createVariant(variantRequestDto, productId));
     }
 
+
+    @GetMapping("/")
+    public ResponseEntity<CommonResponseDto<List<VariantResponseDto>>> getAllVariants() {
+        return ResponseEntity.ok(variantService.getAllVariants());
+    }
+
+    @GetMapping("/{variantId}")
+    public ResponseEntity<CommonResponseDto<VariantResponseDto>> getVariantById(
+            @PathVariable
+            Long variantId) {
+        return ResponseEntity.ok(variantService.getVariantById(variantId));
+    }
+
+
 }

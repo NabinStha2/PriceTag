@@ -102,4 +102,47 @@ public class VariantServiceImpl implements VariantService {
                 .message("Variant created successfully")
                 .build();
     }
+
+    @Override
+    public CommonResponseDto<List<VariantResponseDto>> getAllVariants() {
+        List<Variants> variants = variantRepo.findAllByIsActiveTrue();
+
+        List<VariantResponseDto> variantResponseDtos = variantMapper.mapVariantListToVariantResponseDtoList(
+                variants);
+
+        return CommonResponseDto
+                .<List<VariantResponseDto>>builder()
+                .data(variantResponseDtos)
+                .status(200)
+                .success(true)
+                .message("Variants fetched successfully")
+                .build();
+    }
+
+    @Override
+    public CommonResponseDto<VariantResponseDto> getVariantById(Long variantId) {
+        Variants variant = variantRepo.findByIdAndIsActiveTrue(variantId);
+        return CommonResponseDto
+                .<VariantResponseDto>builder()
+                .data(variantMapper.mapVariantToVariantResponseDto(variant))
+                .status(200)
+                .success(true)
+                .message("Variant details fetched successfully")
+                .build();
+    }
+
+    @Override
+    public CommonResponseDto<List<VariantResponseDto>> getVariantsByProductId(Long productId) {
+        List<Variants> variantsList = variantRepo.findAllByProductIdAndIsActiveTrue(productId);
+        List<VariantResponseDto> variantResponseDtos = variantMapper.mapVariantListToVariantResponseDtoList(
+                variantsList);
+        
+        return CommonResponseDto
+                .<List<VariantResponseDto>>builder()
+                .data(variantResponseDtos)
+                .status(200)
+                .success(true)
+                .message("Variants fetched successfully")
+                .build();
+    }
 }
