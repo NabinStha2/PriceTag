@@ -44,5 +44,22 @@ public class VariantController {
         return ResponseEntity.ok(variantService.getVariantById(variantId));
     }
 
+    @PatchMapping("/edit/{variantId}")
+    public ResponseEntity<CommonResponseDto<VariantResponseDto>> updateVariant(
+            @PathVariable
+            Long variantId,
+            @RequestBody
+            @Valid
+            VariantRequestDto variantRequestDto) {
+        variantRequestDto.setId(variantId);
+        return ResponseEntity.ok(variantService.updateVariant(variantRequestDto));
+    }
+
+    @DeleteMapping("/")
+    public ResponseEntity<CommonResponseDto<VariantResponseDto>> deleteVariantById(
+            @RequestParam
+            Long variantId) {
+        return ResponseEntity.ok(variantService.deleteVariant(variantId));
+    }
 
 }

@@ -47,7 +47,8 @@ public class VariantServiceImpl implements VariantService {
 
         List<Variants> variantList = new ArrayList<>();
         for (VariantRequestDto vDto : variantRequestDto) {
-            if (vDto.getSku() != null && variantRepo.existsBySku(vDto.getSku())) {
+            if (vDto.getSku() != null &&
+                variantRepo.existsBySku(vDto.getSku())) {
                 throw new ApplicationException("400", "Variant with the same SKU already exists",
                                                HttpStatus.BAD_REQUEST);
             }
@@ -106,7 +107,10 @@ public class VariantServiceImpl implements VariantService {
 
     @Override
     public CommonResponseDto<VariantResponseDto> getVariantById(Long variantId) {
-        Variants variant = variantRepo.findByIdAndIsActiveTrue(variantId);
+        Variants variant = variantRepo
+                .findByIdAndIsActiveTrue(variantId)
+                .orElseThrow(() -> new ApplicationException("404", "Variant not found",
+                                                            HttpStatus.NOT_FOUND));
 
         List<VariantResponseDto> variantResponseDtos = getVariantMedias(
                 Collections.singletonList(variant));
@@ -139,6 +143,82 @@ public class VariantServiceImpl implements VariantService {
                 .message("Variants fetched successfully")
                 .build();
     }
+
+    @Override
+    public CommonResponseDto<VariantResponseDto> updateVariant(
+            VariantRequestDto variantRequestDto) {
+        Variants existingVariant = variantRepo
+                .findByIdAndIsActiveTrue(variantRequestDto.getId())
+                .orElseThrow(() -> new ApplicationException("404", "Variant not found",
+                                                            HttpStatus.NOT_FOUND));
+
+
+        if (variantRequestDto.getSku() != null && !variantRequestDto
+                .getSku()
+                .equals(existingVariant.getSku()) &&
+            variantRepo.existsBySku(variantRequestDto.getSku())) {
+
+            throw new ApplicationException("409", "Variant SKU already exists",
+                                           HttpStatus.CONFLICT);
+        }
+
+        if (variantRequestDto.getSizeId() != null) {
+            Size size = sizeRepo
+                    .findById(variantRequestDto.getSizeId())
+                    .orElseThrow(() -> new ApplicationException("404", "Size not found",
+                                                                HttpStatus.NOT_FOUND));
+            existingVariant.setSize(size);
+        }
+        if (variantRequestDto.getColorId() != null) {
+            Color color = colorRepo
+                    .findById(variantRequestDto.getColorId())
+                    .orElseThrow(() -> new ApplicationException("404", "Color not found",
+                                                                HttpStatus.NOT_FOUND));
+            existingVariant.setColor(color);
+        }
+        if (variantRequestDto.getSku() != null) existingVariant.setSku(variantRequestDto.getSku());
+        if (variantRequestDto.getStockQuantity() != null)
+            existingVariant.setStockQuantity(variantRequestDto.getStockQuantity());
+        if (variantRequestDto.getActualPrice() != null)
+            existingVariant.setActualPrice(variantRequestDto.getActualPrice());
+        if (variantRequestDto.getDiscountedPrice() != null)
+            existingVariant.setDiscountedPrice(variantRequestDto.getDiscountedPrice());
+        if (variantRequestDto.getWeightInGrams() != null)
+            existingVariant.setWeightInGrams(variantRequestDto.getWeightInGrams());
+
+        Variants saved = variantRepo.save(existingVariant);
+
+        List<VariantResponseDto> variantResponseDtoList = getVariantMedias(
+                Collections.singletonList(saved));
+
+        return CommonResponseDto
+                .<VariantResponseDto>builder()
+                .success(true)
+                .status(HttpStatus.OK.value())
+                .data(variantResponseDtoList.getFirst())
+                .message("Variant updated")
+                .build();
+    }
+
+    @Override
+    public CommonResponseDto<VariantResponseDto> deleteVariant(Long variantId) {
+        Variants deletedVariant = variantRepo
+                .findByIdAndIsActiveTrue(variantId)
+                .orElseThrow(
+                        () -> new ApplicationException("404", "Variant not found",
+                                                       HttpStatus.NOT_FOUND));
+
+        variantRepo.deleteById(variantId);
+
+        return CommonResponseDto
+                .<VariantResponseDto>builder()
+                .success(true)
+                .status(HttpStatus.OK.value())
+                .data(variantMapper.mapVariantToVariantResponseDto(deletedVariant))
+                .message("Variant deleted successfully")
+                .build();
+    }
+
 
     public List<VariantResponseDto> getVariantMedias(List<Variants> variants) {
         return variants

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface VariantRepo extends JpaRepository<Variants, Long> {
@@ -13,7 +14,7 @@ public interface VariantRepo extends JpaRepository<Variants, Long> {
 
     List<Variants> findAllByIsActiveTrue();
 
-    Variants findByIdAndIsActiveTrue(Long id);
+    Optional<Variants> findByIdAndIsActiveTrue(Long id);
 
     List<Variants> findAllByProductIdAndIsActiveTrue(Long productId);
 }

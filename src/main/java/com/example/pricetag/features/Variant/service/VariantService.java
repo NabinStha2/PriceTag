@@ -19,4 +19,9 @@ public interface VariantService {
     CommonResponseDto<VariantResponseDto> getVariantById(Long variantId);
 
     CommonResponseDto<List<VariantResponseDto>> getVariantsByProductId(Long productId);
+
+    CommonResponseDto<VariantResponseDto> updateVariant(
+            VariantRequestDto variantRequestDto);
+
+    CommonResponseDto<VariantResponseDto> deleteVariant(Long variantId);
 }

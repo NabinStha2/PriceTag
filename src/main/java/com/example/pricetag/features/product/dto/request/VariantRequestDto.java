@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VariantRequestDto {
+    private Long id;
     @NotNull(message = "Size is required")
     private Long sizeId;
     @NotNull(message = "Color is required")
