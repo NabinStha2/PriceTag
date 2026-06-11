@@ -1,7 +1,6 @@
 package com.example.pricetag.features.product.dto.response;
 
 import com.example.pricetag.features.media.dto.response.MediaResponseDto;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +13,6 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class VariantResponseDto {
     private Long id;
     private String sku;

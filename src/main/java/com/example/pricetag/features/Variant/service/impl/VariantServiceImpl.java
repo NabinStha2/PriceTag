@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -76,22 +77,7 @@ public class VariantServiceImpl implements VariantService {
 
         List<Variants> newVariants = variantRepo.saveAll(variantList);
 
-        List<VariantResponseDto> variantResponseDtos = newVariants
-                .stream()
-                .map(v -> {
-                    VariantResponseDto variantResponseDto = variantMapper.mapVariantToVariantResponseDto(
-                            v);
-                    List<MediaResponseDto> mediaDtos = mediaService.getmedias(v.getId(),
-                                                                              EntityType.VARIANT);
-                    if (mediaDtos != null && !mediaDtos.isEmpty()) {
-                        variantResponseDto.setImages(mediaDtos);
-                        variantResponseDto.setPrimaryImageUrl(mediaDtos
-                                                                      .getFirst()
-                                                                      .getUrl());
-                    }
-                    return variantResponseDto;
-                })
-                .toList();
+        List<VariantResponseDto> variantResponseDtos = getVariantMedias(newVariants);
 
 
         return CommonResponseDto
@@ -107,8 +93,7 @@ public class VariantServiceImpl implements VariantService {
     public CommonResponseDto<List<VariantResponseDto>> getAllVariants() {
         List<Variants> variants = variantRepo.findAllByIsActiveTrue();
 
-        List<VariantResponseDto> variantResponseDtos = variantMapper.mapVariantListToVariantResponseDtoList(
-                variants);
+        List<VariantResponseDto> variantResponseDtos = getVariantMedias(variants);
 
         return CommonResponseDto
                 .<List<VariantResponseDto>>builder()
@@ -122,9 +107,13 @@ public class VariantServiceImpl implements VariantService {
     @Override
     public CommonResponseDto<VariantResponseDto> getVariantById(Long variantId) {
         Variants variant = variantRepo.findByIdAndIsActiveTrue(variantId);
+
+        List<VariantResponseDto> variantResponseDtos = getVariantMedias(
+                Collections.singletonList(variant));
+
         return CommonResponseDto
                 .<VariantResponseDto>builder()
-                .data(variantMapper.mapVariantToVariantResponseDto(variant))
+                .data(variantResponseDtos.getFirst())
                 .status(200)
                 .success(true)
                 .message("Variant details fetched successfully")
@@ -133,10 +122,15 @@ public class VariantServiceImpl implements VariantService {
 
     @Override
     public CommonResponseDto<List<VariantResponseDto>> getVariantsByProductId(Long productId) {
+        productRepo
+                .findByIdAndIsActiveTrue(productId)
+                .orElseThrow(() -> new ApplicationException("404", "Product not found",
+                                                            HttpStatus.NOT_FOUND));
+
         List<Variants> variantsList = variantRepo.findAllByProductIdAndIsActiveTrue(productId);
-        List<VariantResponseDto> variantResponseDtos = variantMapper.mapVariantListToVariantResponseDtoList(
-                variantsList);
-        
+
+        List<VariantResponseDto> variantResponseDtos = getVariantMedias(variantsList);
+
         return CommonResponseDto
                 .<List<VariantResponseDto>>builder()
                 .data(variantResponseDtos)
@@ -144,5 +138,24 @@ public class VariantServiceImpl implements VariantService {
                 .success(true)
                 .message("Variants fetched successfully")
                 .build();
+    }
+
+    public List<VariantResponseDto> getVariantMedias(List<Variants> variants) {
+        return variants
+                .stream()
+                .map(v -> {
+                    VariantResponseDto variantResponseDto = variantMapper.mapVariantToVariantResponseDto(
+                            v);
+                    List<MediaResponseDto> mediaDtos = mediaService.getmedias(v.getId(),
+                                                                              EntityType.VARIANT);
+                    if (mediaDtos != null && !mediaDtos.isEmpty()) {
+                        variantResponseDto.setImages(mediaDtos);
+                        variantResponseDto.setPrimaryImageUrl(mediaDtos
+                                                                      .getFirst()
+                                                                      .getUrl());
+                    }
+                    return variantResponseDto;
+                })
+                .toList();
     }
 }
