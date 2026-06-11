@@ -2,11 +2,18 @@ package com.example.pricetag.features.Variant.service.impl;
 
 
 import com.example.pricetag.dto.CommonResponseDto;
+import com.example.pricetag.entity.Color;
+import com.example.pricetag.entity.Size;
 import com.example.pricetag.entity.Variants;
+import com.example.pricetag.enums.EntityType;
 import com.example.pricetag.exceptions.ApplicationException;
 import com.example.pricetag.features.Variant.mapper.VariantMapper;
+import com.example.pricetag.features.Variant.repository.ColorRepo;
+import com.example.pricetag.features.Variant.repository.SizeRepo;
 import com.example.pricetag.features.Variant.repository.VariantRepo;
 import com.example.pricetag.features.Variant.service.VariantService;
+import com.example.pricetag.features.media.dto.response.MediaResponseDto;
+import com.example.pricetag.features.media.service.MediaService;
 import com.example.pricetag.features.product.dto.request.VariantRequestDto;
 import com.example.pricetag.features.product.dto.response.VariantResponseDto;
 import com.example.pricetag.features.product.entity.Product;
@@ -15,6 +22,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -22,26 +32,71 @@ public class VariantServiceImpl implements VariantService {
     private final VariantRepo variantRepo;
     private final ProductRepo productRepo;
     private final VariantMapper variantMapper;
+    private final SizeRepo sizeRepo;
+    private final ColorRepo colorRepo;
+    private final MediaService mediaService;
 
     @Override
-    public CommonResponseDto<VariantResponseDto> createVariant(
-            VariantRequestDto variantRequestDto) {
+    public CommonResponseDto<List<VariantResponseDto>> createVariant(
+            List<VariantRequestDto> variantRequestDto, Long productId) {
         Product existingProduct = productRepo
-                .findByIdAndIsActiveTrue(variantRequestDto.getProductId())
+                .findByIdAndIsActiveTrue(productId)
                 .orElseThrow(() -> new ApplicationException("404", "Product not found",
                                                             HttpStatus.NOT_FOUND));
 
-        if (variantRepo.existsBySkuAndIsActiveTrue(variantRequestDto.getSku())) {
-            throw new ApplicationException("400", "Variant with the same SKU already exists",
-                                           HttpStatus.BAD_REQUEST);
+        List<Variants> variantList = new ArrayList<>();
+        for (VariantRequestDto vDto : variantRequestDto) {
+            if (vDto.getSku() != null && variantRepo.existsBySku(vDto.getSku())) {
+                throw new ApplicationException("400", "Variant with the same SKU already exists",
+                                               HttpStatus.BAD_REQUEST);
+            }
+
+            Size size = null;
+            Color color = null;
+
+            if (vDto.getSizeId() != null) {
+                size = sizeRepo
+                        .findSizeById((vDto.getSizeId()))
+                        .orElseThrow(() -> new ApplicationException("404", "Size not found",
+                                                                    HttpStatus.NOT_FOUND));
+            }
+
+            if (vDto.getColorId() != null) {
+                color = colorRepo
+                        .findColorById(vDto.getColorId())
+                        .orElseThrow(() -> new ApplicationException("404", "Color not found",
+                                                                    HttpStatus.NOT_FOUND));
+            }
+
+            Variants variantData = variantMapper.mapVariantRequestDtoToVariant(vDto,
+                                                                               existingProduct,
+                                                                               size, color);
+            variantList.add(variantData);
         }
 
-        Variants newVariant = variantRepo.save(
-                variantMapper.mapVariantRequestDtoToVariant(variantRequestDto));
+        List<Variants> newVariants = variantRepo.saveAll(variantList);
+
+        List<VariantResponseDto> variantResponseDtos = newVariants
+                .stream()
+                .map(v -> {
+                    VariantResponseDto variantResponseDto = variantMapper.mapVariantToVariantResponseDto(
+                            v);
+                    List<MediaResponseDto> mediaDtos = mediaService.getmedias(v.getId(),
+                                                                              EntityType.VARIANT);
+                    if (mediaDtos != null && !mediaDtos.isEmpty()) {
+                        variantResponseDto.setImages(mediaDtos);
+                        variantResponseDto.setPrimaryImageUrl(mediaDtos
+                                                                      .getFirst()
+                                                                      .getUrl());
+                    }
+                    return variantResponseDto;
+                })
+                .toList();
+
 
         return CommonResponseDto
-                .<VariantResponseDto>builder()
-                .data(variantMapper.mapVariantToVariantResponseDto(newVariant))
+                .<List<VariantResponseDto>>builder()
+                .data(variantResponseDtos)
                 .status(401)
                 .success(true)
                 .message("Variant created successfully")

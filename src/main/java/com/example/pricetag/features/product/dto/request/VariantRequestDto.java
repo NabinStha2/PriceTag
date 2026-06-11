@@ -22,6 +22,5 @@ public class VariantRequestDto {
     private BigDecimal actualPrice;
     private BigDecimal discountedPrice;
     private Integer weightInGrams;
-    private Long productId;
 }
 

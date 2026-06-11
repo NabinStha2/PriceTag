@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VariantRepo extends JpaRepository<Variants, Long> {
-    boolean existsBySkuAndIsActiveTrue(String sku);
+    boolean existsBySku(String sku);
 }

@@ -1,5 +1,6 @@
 package com.example.pricetag.features.product.dto.response;
 
+import com.example.pricetag.features.media.dto.response.MediaResponseDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Builder
@@ -22,4 +24,6 @@ public class VariantResponseDto {
     private Integer weightInGrams;
     private ColorResponseDto color;
     private SizeResponseDto size;
+    private String primaryImageUrl;
+    private List<MediaResponseDto> images;
 }

@@ -70,18 +70,8 @@ public class Variants {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id",
+            nullable = false,
             referencedColumnName = "id")
     private Product product;
-
-//    @Column(name = "size")
-//    private String size;
-
-    //    @Column(name = "color")
-//    @Enumerated(EnumType.STRING)
-//    private ColorType color;
-
-//    enum ColorType {
-//        RED, GREEN, BLUE, YELLOW, ORANGE, PINK, PURPLE, BLACK, WHITE, GRAY, BROWN, GOLD, SILVER
-//    }
 
 }
