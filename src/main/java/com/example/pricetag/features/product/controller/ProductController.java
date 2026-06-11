@@ -9,7 +9,6 @@ import com.example.pricetag.features.product.dto.response.SingleProductDetailsRe
 import com.example.pricetag.features.product.service.ProductService;
 import com.example.pricetag.utils.ColorLogger;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,8 +18,11 @@ import java.util.List;
 @RequestMapping("/api/v1/product")
 public class ProductController {
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
 
 
     @GetMapping("/subcategory/{subCategoryId}")

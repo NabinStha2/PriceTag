@@ -7,6 +7,8 @@ import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.util.List;
+import com.example.pricetag.features.product.dto.request.VariantRequestDto;
 
 @Getter
 @Setter
@@ -33,4 +35,5 @@ public class CreateProductRequestDto {
     private BigDecimal basePrice;
     private BigDecimal discountedPrice;
     private MultipartFile[] images;
+    private List<VariantRequestDto> variants;
 }

@@ -70,7 +70,6 @@ public class Variants {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id",
-            nullable = false,
             referencedColumnName = "id")
     private Product product;
 

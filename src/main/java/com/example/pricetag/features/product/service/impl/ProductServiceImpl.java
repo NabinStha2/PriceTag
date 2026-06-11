@@ -6,11 +6,15 @@ import com.example.pricetag.dto.PaginationDto;
 import com.example.pricetag.dto.SubCategoryDto;
 import com.example.pricetag.enums.EntityType;
 import com.example.pricetag.exceptions.ApplicationException;
+import com.example.pricetag.features.Variant.repository.ColorRepo;
+import com.example.pricetag.features.Variant.repository.SizeRepo;
+import com.example.pricetag.features.Variant.service.VariantService;
 import com.example.pricetag.features.category.entity.Category;
 import com.example.pricetag.features.category.repository.CategoryRepo;
 import com.example.pricetag.features.media.dto.response.MediaResponseDto;
 import com.example.pricetag.features.media.service.MediaService;
 import com.example.pricetag.features.product.dto.request.CreateProductRequestDto;
+import com.example.pricetag.features.product.dto.request.VariantRequestDto;
 import com.example.pricetag.features.product.dto.response.ProductResponseDto;
 import com.example.pricetag.features.product.dto.response.SingleProductDetailsResponseDto;
 import com.example.pricetag.features.product.entity.Product;
@@ -19,7 +23,6 @@ import com.example.pricetag.features.product.repository.ProductRepo;
 import com.example.pricetag.features.product.service.ProductService;
 import com.example.pricetag.features.subcategory.entity.SubCategory;
 import com.example.pricetag.features.subcategory.repository.SubCategoryRepo;
-import com.example.pricetag.repository.CartItemRepo;
 import com.example.pricetag.utils.ColorLogger;
 import com.example.pricetag.utils.PageableBuilder;
 import lombok.RequiredArgsConstructor;
@@ -40,10 +43,11 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepo productRepo;
     private final CategoryRepo categoryRepo;
     private final SubCategoryRepo subCategoryRepo;
-    private final CartItemRepo cartItemRepo;
     private final ProductMapper productMapper;
     private final MediaService mediaService;
-//    private final ImageService imageService;
+    private final VariantService variantService;
+    private final SizeRepo sizeRepo;
+    private final ColorRepo colorRepo;
 
     private static Product createNewProduct(CreateProductRequestDto createProductRequestDto,
                                             SubCategory filteredSubCategory, Category category,
@@ -77,26 +81,26 @@ public class ProductServiceImpl implements ProductService {
                 .replaceAll("(^-|-$)", "");
     }
 
-    private static void validateCreateProduct(CreateProductRequestDto createProductRequestDto) {
-        if (createProductRequestDto.getName() == null || createProductRequestDto
-                .getName()
-                .isBlank()) {
-            throw new ApplicationException("400", "Product name is required",
-                                           HttpStatus.BAD_REQUEST);
-        }
-
-        if (createProductRequestDto.getDescription() == null || createProductRequestDto
-                .getDescription()
-                .isBlank()) {
-            throw new ApplicationException("400", "Product description is required",
-                                           HttpStatus.BAD_REQUEST);
-        }
-
-        if (createProductRequestDto.getBasePrice() == null) {
-            throw new ApplicationException("400", "Product base price is required",
-                                           HttpStatus.BAD_REQUEST);
-        }
-    }
+//    private static void validateCreateProduct(CreateProductRequestDto createProductRequestDto) {
+//        if (createProductRequestDto.getName() == null || createProductRequestDto
+//                .getName()
+//                .isBlank()) {
+//            throw new ApplicationException("400", "Product name is required",
+//                                           HttpStatus.BAD_REQUEST);
+//        }
+//
+//        if (createProductRequestDto.getDescription() == null || createProductRequestDto
+//                .getDescription()
+//                .isBlank()) {
+//            throw new ApplicationException("400", "Product description is required",
+//                                           HttpStatus.BAD_REQUEST);
+//        }
+//
+//        if (createProductRequestDto.getBasePrice() == null) {
+//            throw new ApplicationException("400", "Product base price is required",
+//                                           HttpStatus.BAD_REQUEST);
+//        }
+//    }
 
     private String buildUniqueSlug(String name) {
         String baseSlug = createSlug(name);
@@ -228,17 +232,65 @@ public class ProductServiceImpl implements ProductService {
         String slug = resolveSlug(createProductRequestDto);
         Product newProduct = createNewProduct(createProductRequestDto, existingSubCategory,
                                               existingCategory, slug);
+
+        // Handle variants (if provided) - build variant entities and attach to the new product
+        if (createProductRequestDto.getVariants() != null && !createProductRequestDto
+                .getVariants()
+                .isEmpty()) {
+            for (VariantRequestDto vDto : createProductRequestDto.getVariants()) {
+                com.example.pricetag.entity.Size size = null;
+                com.example.pricetag.entity.Color color = null;
+
+                if (vDto.getSizeId() != null) {
+                    size = sizeRepo
+                            .findById(vDto.getSizeId())
+                            .orElseThrow(() -> new ApplicationException("404", "Size not found",
+                                                                        HttpStatus.NOT_FOUND));
+                }
+
+                if (vDto.getColorId() != null) {
+                    color = colorRepo
+                            .findById(vDto.getColorId())
+                            .orElseThrow(() -> new ApplicationException("404", "Color not found",
+                                                                        HttpStatus.NOT_FOUND));
+                }
+
+                com.example.pricetag.entity.Variants variant = com.example.pricetag.entity.Variants
+                        .builder()
+                        .sku(vDto.getSku())
+                        .stockQuantity(
+                                vDto.getStockQuantity() == null ? 0 : vDto.getStockQuantity())
+                        .actualPrice(vDto.getActualPrice() == null ?
+                                     createProductRequestDto.getBasePrice() : vDto.getActualPrice())
+                        .discountedPrice(vDto.getDiscountedPrice())
+                        .weightInGrams(vDto.getWeightInGrams())
+                        .size(size)
+                        .color(color)
+                        .product(newProduct)
+                        .build();
+
+                newProduct
+                        .getVariants()
+                        .add(variant);
+            }
+        }
+
         Product savedProduct = productRepo.save(newProduct);
 
+        // Attach images (if any) after product is saved
         mediaService.saveMultimedias(savedProduct.getId(), EntityType.PRODUCT,
                                      createProductRequestDto.getImages(), savedProduct
                                              .getId()
                                              .toString());
 
-        savedProduct.setPrimaryImageUrl(mediaService
-                                                .getmedias(savedProduct.getId(), EntityType.PRODUCT)
-                                                .getFirst()
-                                                .getUrl());
+        // Safely set primary image URL if available
+        List<com.example.pricetag.features.media.dto.response.MediaResponseDto> medias = mediaService.getmedias(
+                savedProduct.getId(), EntityType.PRODUCT);
+        if (medias != null && !medias.isEmpty()) {
+            savedProduct.setPrimaryImageUrl(medias
+                                                    .getFirst()
+                                                    .getUrl());
+        }
 
         ProductResponseDto productResponseDto = productMapper.mapProductToProductResponseDto(
                 savedProduct);
