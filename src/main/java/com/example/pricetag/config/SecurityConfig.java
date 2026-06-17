@@ -31,46 +31,45 @@ import java.util.List;
 public class SecurityConfig {
 
     // Public endpoints that don't require authentication
-    private static final String[] PUBLIC_ENDPOINTS = {
-            "/api/v1/auth/login",
-            "/api/v1/auth/register",
-            "/api/v1/auth/verify-otp",
-            "/api/v1/auth/forgot-password",
-            "/api/v1/auth/verify-forgot-password-otp",
-            "/api/v1/auth/welcome",
-            "/api/v1/jwt/generate",
-            "/api/v1/jwt/validate",
-            "/",
-            "/actuator/health",
-            "/swagger-ui/**",
-            "/v3/api-docs/**"
-    };
+    private static final String[] PUBLIC_ENDPOINTS = {"/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/verify-otp", "/api/v1/auth/forgot-password", "/api/v1/auth/verify-forgot-password-otp", "/api/v1/auth/welcome", "/api/v1/jwt/generate", "/api/v1/jwt/validate", "/", "/actuator/health", "/swagger-ui/**", "/v3/api-docs/**"};
 
     // Admin-only endpoints
-    private static final String[] ADMIN_ENDPOINTS = {"/api/v1/category/add", "/api/v1/subcategory/{categoryId}/add", "/api/v1/subcategory/edit", "/api/v1/product/category/{categoryId}/subcategory/{subCategoryId}/add", "/api/v1/image/upload"};
+    private static final String[] ADMIN_ENDPOINTS = {"/api/v1/category/add", "/api/v1/subcategory/{categoryId}/add", "/api/v1/subcategory/edit", "/api/v1/product/category/{categoryId}/subcategory/{subCategoryId}/add", "/api/v1/image/upload", "/api/v1/variant/edit/{variantId}", "/api/v1/variant/product/{productId}"};
 
     // User-accessible endpoints (both USER and ADMIN roles)
-    private static final String[] USER_ENDPOINTS = {"/user/**", "/api/v1/category/{categoryId}", "/api/v1/subcategory/{subCategoryId}", "/api/v1/product/{productId}"};
+    private static final String[] USER_ENDPOINTS = {"/user/**", "/api/v1/category/{categoryId}", "/api/v1/subcategory/{subCategoryId}", "/api/v1/product/{productId}", "/api/v1/variant/", "/api/v1/variant/{variantId}"};
 
     // Helper method to extract role name
     private String extractRole(AppUserRole role) {
-        return role.name().substring(role.name().indexOf("_") + 1);
+        return role
+                .name()
+                .substring(role
+                                   .name()
+                                   .indexOf("_") + 1);
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService, JwtAuthenticationProvider jwtAuthenticationProvider, JwtFilter jwtFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
+                                                   PasswordEncoder passwordEncoder,
+                                                   UserDetailsService userDetailsService,
+                                                   JwtAuthenticationProvider jwtAuthenticationProvider,
+                                                   JwtFilter jwtFilter) throws Exception {
         ColorLogger.logInfo("Configuring security filter chain");
-        return httpSecurity.csrf(AbstractHttpConfigurer::disable)
+        return httpSecurity
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth -> auth.requestMatchers(PUBLIC_ENDPOINTS)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PUBLIC_ENDPOINTS)
                         .permitAll()
                         .requestMatchers(ADMIN_ENDPOINTS)
                         .hasRole(extractRole(AppUserRole.ROLE_ADMIN))
                         .requestMatchers(USER_ENDPOINTS)
-                        .hasAnyRole(extractRole(AppUserRole.ROLE_USER), extractRole(AppUserRole.ROLE_ADMIN))
+                        .hasAnyRole(extractRole(AppUserRole.ROLE_USER),
+                                    extractRole(AppUserRole.ROLE_ADMIN))
                         .anyRequest()
                         .authenticated())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider(passwordEncoder, userDetailsService))
 //                .authenticationProvider(jwtAuthenticationProvider)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
@@ -83,13 +82,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+            throws Exception {
         ColorLogger.logInfo("I am inside AuthenticationManager");
         return config.getAuthenticationManager();
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder, UserDetailsService userDetailsService) {
+    public AuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder,
+                                                         UserDetailsService userDetailsService) {
         ColorLogger.logInfo("I am inside AuthenticationProvider");
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setHideUserNotFoundExceptions(false);
@@ -111,11 +112,12 @@ public class SecurityConfig {
 
         // Configure allowed origins (more secure than wildcard)
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000",  // React dev server
-                "http://localhost:8080",  // Spring Boot server
-                "https://yourdomain.com"  // Production domain
-        ));
+                                                      "http://localhost:8080",  // Spring Boot server
+                                                      "https://yourdomain.com"  // Production domain
+                                                     ));
 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedMethods(
+                Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
