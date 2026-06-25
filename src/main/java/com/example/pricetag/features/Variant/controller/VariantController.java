@@ -44,6 +44,13 @@ public class VariantController {
         return ResponseEntity.ok(variantService.getVariantById(variantId));
     }
 
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<CommonResponseDto<List<VariantResponseDto>>> getVariantByProductId(
+            @PathVariable
+            Long productId) {
+        return ResponseEntity.ok(variantService.getVariantsByProductId(productId));
+    }
+
     @PatchMapping("/edit/{variantId}")
     public ResponseEntity<CommonResponseDto<VariantResponseDto>> updateVariant(
             @PathVariable
